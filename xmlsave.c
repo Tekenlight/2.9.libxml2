@@ -51,8 +51,8 @@
  *
  * Returns 1 if true, 0 if not and -1 in case of error
  */
-int
-xmlIsXHTML(const xmlChar *systemID, const xmlChar *publicID) {
+int xmlIsXHTML(const xmlChar *systemID, const xmlChar *publicID)
+{
     if ((systemID == NULL) && (publicID == NULL))
 	return(-1);
     if (publicID != NULL) {
@@ -104,8 +104,7 @@ struct _xmlSaveCtxt {
  *
  * Handle an out of memory condition
  */
-static void
-xmlSaveErrMemory(const char *extra)
+static void xmlSaveErrMemory(const char *extra)
 {
     __xmlSimpleError(XML_FROM_OUTPUT, XML_ERR_NO_MEMORY, NULL, NULL, extra);
 }
@@ -118,8 +117,7 @@ xmlSaveErrMemory(const char *extra)
  *
  * Handle an out of memory condition
  */
-static void
-xmlSaveErr(int code, xmlNodePtr node, const char *extra)
+static void xmlSaveErr(int code, xmlNodePtr node, const char *extra)
 {
     const char *msg = NULL;
 
@@ -147,8 +145,8 @@ xmlSaveErr(int code, xmlNodePtr node, const char *extra)
  *			Special escaping routines			*
  *									*
  ************************************************************************/
-static unsigned char *
-xmlSerializeHexCharRef(unsigned char *out, int val) {
+static unsigned char * xmlSerializeHexCharRef(unsigned char *out, int val)
+{
     unsigned char *ptr;
 
     *out++ = '&';
@@ -203,8 +201,7 @@ xmlSerializeHexCharRef(unsigned char *out, int val) {
  *     if the return value is positive, else unpredictable.
  * The value of @outlen after return is the number of octets consumed.
  */
-static int
-xmlEscapeEntities(unsigned char* out, int *outlen,
+static int xmlEscapeEntities(unsigned char* out, int *outlen,
                  const xmlChar* in, int *inlen) {
     unsigned char* outstart = out;
     const unsigned char* base = in;
@@ -326,8 +323,7 @@ error:
  *
  * Initialize a saving context
  */
-static void
-xmlSaveCtxtInit(xmlSaveCtxtPtr ctxt)
+static void xmlSaveCtxtInit(xmlSaveCtxtPtr ctxt)
 {
     int i;
     int len;
@@ -357,8 +353,7 @@ xmlSaveCtxtInit(xmlSaveCtxtPtr ctxt)
  *
  * Free a saving context, destroying the output in any remaining buffer
  */
-static void
-xmlFreeSaveCtxt(xmlSaveCtxtPtr ctxt)
+static void xmlFreeSaveCtxt(xmlSaveCtxtPtr ctxt)
 {
     if (ctxt == NULL) return;
     if (ctxt->encoding != NULL)
@@ -375,8 +370,7 @@ xmlFreeSaveCtxt(xmlSaveCtxtPtr ctxt)
  *
  * Returns the new structure or NULL in case of error
  */
-static xmlSaveCtxtPtr
-xmlNewSaveCtxt(const char *encoding, int options)
+static xmlSaveCtxtPtr xmlNewSaveCtxt(const char *encoding, int options)
 {
     xmlSaveCtxtPtr ret;
 
@@ -430,8 +424,7 @@ xmlNewSaveCtxt(const char *encoding, int options)
  *
  * Serialize the attribute in the buffer
  */
-static void
-xmlAttrSerializeContent(xmlOutputBufferPtr buf, xmlAttrPtr attr)
+static void xmlAttrSerializeContent(xmlOutputBufferPtr buf, xmlAttrPtr attr)
 {
     xmlNodePtr children;
 
@@ -463,8 +456,8 @@ xmlAttrSerializeContent(xmlOutputBufferPtr buf, xmlAttrPtr attr)
  *
  * This will dump the content of the notation table as an XML DTD definition
  */
-void
-xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
+void xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table)
+{
     xmlBufferPtr buffer;
 
     buffer = xmlBufferCreate();
@@ -486,8 +479,8 @@ xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
  * This will dump the content of the element declaration as an XML
  * DTD definition
  */
-void
-xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
+void xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem)
+{
     xmlBufferPtr buffer;
 
     buffer = xmlBufferCreate();
@@ -509,8 +502,8 @@ xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
  * This will dump the content of the attribute declaration as an XML
  * DTD definition
  */
-void
-xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
+void xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr)
+{
     xmlBufferPtr buffer;
 
     buffer = xmlBufferCreate();
@@ -531,8 +524,8 @@ xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
  *
  * This will dump the content of the entity table as an XML DTD definition
  */
-void
-xmlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
+void xmlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent)
+{
     xmlBufferPtr buffer;
 
     buffer = xmlBufferCreate();
@@ -587,8 +580,7 @@ static int xmlSaveClearEncoding(xmlSaveCtxtPtr ctxt) {
 }
 
 #ifdef LIBXML_HTML_ENABLED
-static void
-xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
+static void xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
 #endif
 static void xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
 static void xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
@@ -602,8 +594,7 @@ static int xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur);
  *
  * Write out formatting for non-significant whitespace output.
  */
-static void
-xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
+static void xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
 {
     int i;
     if ((ctxt == NULL) || (ctxt->buf == NULL))
@@ -627,8 +618,8 @@ xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
  * Should be called in the context of attributes dumps.
  * If @ctxt is supplied, @buf should be its buffer.
  */
-static void
-xmlNsDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur, xmlSaveCtxtPtr ctxt) {
+static void xmlNsDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur, xmlSaveCtxtPtr ctxt)
+{
     if ((cur == NULL) || (buf == NULL)) return;
     if ((cur->type == XML_LOCAL_NAMESPACE) && (cur->href != NULL)) {
 	if (xmlStrEqual(cur->prefix, BAD_CAST "xml"))
@@ -658,8 +649,8 @@ xmlNsDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur, xmlSaveCtxtPtr ctxt) {
  * Dump a local Namespace definition to a save context.
  * Should be called in the context of attribute dumps.
  */
-static void
-xmlNsDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
+static void xmlNsDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur)
+{
     xmlNsDumpOutput(ctxt->buf, cur, ctxt);
 }
 
@@ -671,8 +662,8 @@ xmlNsDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
  * Dump a list of local namespace definitions to a save context.
  * Should be called in the context of attribute dumps.
  */
-static void
-xmlNsListDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
+static void xmlNsListDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur)
+{
     while (cur != NULL) {
         xmlNsDumpOutput(ctxt->buf, cur, ctxt);
 	cur = cur->next;
@@ -687,8 +678,8 @@ xmlNsListDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
  * Dump a list of local Namespace definitions.
  * Should be called in the context of attributes dumps.
  */
-void
-xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur) {
+void xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur)
+{
     while (cur != NULL) {
         xmlNsDumpOutput(buf, cur, NULL);
 	cur = cur->next;
@@ -702,8 +693,8 @@ xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur) {
  *
  * Dump the XML document DTD, if any.
  */
-static void
-xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
+static void xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd)
+{
     xmlOutputBufferPtr buf;
     int format, level;
 
@@ -755,8 +746,8 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
  *
  * Dump an XML attribute
  */
-static void
-xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
+static void xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur)
+{
     xmlOutputBufferPtr buf;
 
     if (cur == NULL) return;
@@ -785,8 +776,8 @@ xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
  *
  * Dump a list of XML attributes
  */
-static void
-xmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
+static void xmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur)
+{
     if (cur == NULL) return;
     while (cur != NULL) {
         xmlAttrDumpOutput(ctxt, cur);
@@ -802,8 +793,8 @@ xmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
  *
  * Dump an XML node list, recursive behaviour, children are printed too.
  */
-static void
-xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+static void xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur)
+{
     xmlOutputBufferPtr buf;
 
     if (cur == NULL) return;
@@ -832,8 +823,7 @@ xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  *
  * Dump an HTML node, recursive behaviour, children are printed too.
  */
-static int
-htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+static int htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     const xmlChar *oldenc = NULL;
     const xmlChar *oldctxtenc = ctxt->encoding;
     const xmlChar *encoding = ctxt->encoding;
@@ -891,8 +881,8 @@ htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  *
  * Dump an XML node, recursive behaviour, children are printed too.
  */
-static void
-xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+static void xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur)
+{
     int format;
     xmlNodePtr tmp;
     xmlChar *start, *end;
@@ -1093,8 +1083,8 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  *
  * Dump an XML document.
  */
-static int
-xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
+static int xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur)
+{
 #ifdef LIBXML_HTML_ENABLED
     xmlDtdPtr dtd;
     int is_xhtml = 0;
@@ -1257,8 +1247,7 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
  *
  * Returns 1 if the node is an empty node, 0 if not and -1 in case of error
  */
-static int
-xhtmlIsEmpty(xmlNodePtr node) {
+static int xhtmlIsEmpty(xmlNodePtr node) {
     if (node == NULL)
 	return(-1);
     if (node->type != XML_ELEMENT_NODE)
@@ -1322,8 +1311,7 @@ xhtmlIsEmpty(xmlNodePtr node) {
  *
  * Dump a list of XML attributes
  */
-static void
-xhtmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
+static void xhtmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
     xmlAttrPtr xml_lang = NULL;
     xmlAttrPtr lang = NULL;
     xmlAttrPtr name = NULL;
@@ -1408,8 +1396,7 @@ xhtmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
-static void
-xhtmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+static void xhtmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     xmlOutputBufferPtr buf;
 
     if (cur == NULL) return;
@@ -1440,8 +1427,7 @@ xhtmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  *
  * Dump an XHTML node, recursive behaviour, children are printed too.
  */
-static void
-xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+static void xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     int format, addmeta = 0;
     xmlNodePtr tmp;
     xmlChar *start, *end;
@@ -1793,8 +1779,7 @@ xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  *
  * Returns a new serialization context or NULL in case of error.
  */
-xmlSaveCtxtPtr
-xmlSaveToFd(int fd, const char *encoding, int options)
+xmlSaveCtxtPtr xmlSaveToFd(int fd, const char *encoding, int options)
 {
     xmlSaveCtxtPtr ret;
 
@@ -1821,8 +1806,7 @@ xmlSaveToFd(int fd, const char *encoding, int options)
  *
  * Returns a new serialization context or NULL in case of error.
  */
-xmlSaveCtxtPtr
-xmlSaveToFilename(const char *filename, const char *encoding, int options)
+xmlSaveCtxtPtr xmlSaveToFilename(const char *filename, const char *encoding, int options)
 {
     xmlSaveCtxtPtr ret;
     int compression = 0; /* TODO handle compression option */
@@ -1851,8 +1835,7 @@ xmlSaveToFilename(const char *filename, const char *encoding, int options)
  * Returns a new serialization context or NULL in case of error.
  */
 
-xmlSaveCtxtPtr
-xmlSaveToBuffer(xmlBufferPtr buffer, const char *encoding, int options)
+xmlSaveCtxtPtr xmlSaveToBuffer(xmlBufferPtr buffer, const char *encoding, int options)
 {
     xmlSaveCtxtPtr ret;
 
@@ -1880,8 +1863,7 @@ xmlSaveToBuffer(xmlBufferPtr buffer, const char *encoding, int options)
  *
  * Returns a new serialization context or NULL in case of error.
  */
-xmlSaveCtxtPtr
-xmlSaveToIO(xmlOutputWriteCallback iowrite,
+xmlSaveCtxtPtr xmlSaveToIO(xmlOutputWriteCallback iowrite,
             xmlOutputCloseCallback ioclose,
             void *ioctx, const char *encoding, int options)
 {
@@ -1950,8 +1932,7 @@ xmlSaveTree(xmlSaveCtxtPtr ctxt, xmlNodePtr node)
  *
  * Returns the number of byte written or -1 in case of error.
  */
-int
-xmlSaveFlush(xmlSaveCtxtPtr ctxt)
+int xmlSaveFlush(xmlSaveCtxtPtr ctxt)
 {
     if (ctxt == NULL) return(-1);
     if (ctxt->buf == NULL) return(-1);
@@ -1967,8 +1948,7 @@ xmlSaveFlush(xmlSaveCtxtPtr ctxt)
  *
  * Returns the number of byte written or -1 in case of error.
  */
-int
-xmlSaveClose(xmlSaveCtxtPtr ctxt)
+int xmlSaveClose(xmlSaveCtxtPtr ctxt)
 {
     int ret;
 
@@ -1987,8 +1967,7 @@ xmlSaveClose(xmlSaveCtxtPtr ctxt)
  *
  * Returns 0 if successful or -1 in case of error.
  */
-int
-xmlSaveSetEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
+int xmlSaveSetEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
 {
     if (ctxt == NULL) return(-1);
     ctxt->escape = escape;
@@ -2004,8 +1983,7 @@ xmlSaveSetEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
  *
  * Returns 0 if successful or -1 in case of error.
  */
-int
-xmlSaveSetAttrEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
+int xmlSaveSetAttrEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
 {
     if (ctxt == NULL) return(-1);
     ctxt->escapeAttr = escape;
@@ -2027,8 +2005,7 @@ xmlSaveSetAttrEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
  *
  * Serialize text attribute values to an xmlBufPtr
  */
-void
-xmlBufAttrSerializeTxtContent(xmlBufPtr buf, xmlDocPtr doc,
+void xmlBufAttrSerializeTxtContent(xmlBufPtr buf, xmlDocPtr doc,
                               xmlAttrPtr attr, const xmlChar * string)
 {
     xmlChar *base, *cur;
@@ -2151,8 +2128,7 @@ xmlBufAttrSerializeTxtContent(xmlBufPtr buf, xmlDocPtr doc,
  *
  * Serialize text attribute values to an xml simple buffer
  */
-void
-xmlAttrSerializeTxtContent(xmlBufferPtr buf, xmlDocPtr doc,
+void xmlAttrSerializeTxtContent(xmlBufferPtr buf, xmlDocPtr doc,
                            xmlAttrPtr attr, const xmlChar * string)
 {
     xmlBufPtr buffer;
@@ -2182,8 +2158,7 @@ xmlAttrSerializeTxtContent(xmlBufferPtr buf, xmlDocPtr doc,
  *
  * Returns the number of bytes written to the buffer or -1 in case of error
  */
-int
-xmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
+int xmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
             int format)
 {
     xmlBufPtr buffer;
@@ -2273,8 +2248,7 @@ xmlBufNodeDump(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
  *
  * Dump an XML/HTML node, recursive behaviour, children are printed too.
  */
-void
-xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
+void xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
 {
     xmlOutputBufferPtr outbuf;
 
@@ -2327,8 +2301,7 @@ xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
-void
-xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur,
+void xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur,
                   int level, int format, const char *encoding)
 {
     xmlSaveCtxt ctxt;
@@ -2382,8 +2355,7 @@ xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur,
  * or xmlKeepBlanksDefault(0) was called
  */
 
-void
-xmlDocDumpFormatMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
+void xmlDocDumpFormatMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
 		int * doc_txt_len, const char * txt_encoding,
 		int format) {
     xmlSaveCtxt ctxt;
@@ -2466,8 +2438,8 @@ xmlDocDumpFormatMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
  * The resulting byte array is zero terminated, though the last 0 is not
  * included in the returned size.
  */
-void
-xmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
+void xmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size)
+{
     xmlDocDumpFormatMemoryEnc(cur, mem, size, NULL, 0);
 }
 
@@ -2484,8 +2456,8 @@ xmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
-void
-xmlDocDumpFormatMemory(xmlDocPtr cur, xmlChar**mem, int *size, int format) {
+void xmlDocDumpFormatMemory(xmlDocPtr cur, xmlChar**mem, int *size, int format)
+{
     xmlDocDumpFormatMemoryEnc(cur, mem, size, NULL, format);
 }
 
@@ -2501,8 +2473,7 @@ xmlDocDumpFormatMemory(xmlDocPtr cur, xmlChar**mem, int *size, int format) {
  * allocated memory with xmlFree().
  */
 
-void
-xmlDocDumpMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
+void xmlDocDumpMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
 	            int * doc_txt_len, const char * txt_encoding) {
     xmlDocDumpFormatMemoryEnc(out_doc, doc_txt_ptr, doc_txt_len,
 	                      txt_encoding, 0);
@@ -2520,8 +2491,8 @@ xmlDocDumpMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
-int
-xmlDocFormatDump(FILE *f, xmlDocPtr cur, int format) {
+int xmlDocFormatDump(FILE *f, xmlDocPtr cur, int format)
+{
     xmlSaveCtxt ctxt;
     xmlOutputBufferPtr buf;
     const char * encoding;
@@ -2569,8 +2540,8 @@ xmlDocFormatDump(FILE *f, xmlDocPtr cur, int format) {
  *
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlDocDump(FILE *f, xmlDocPtr cur) {
+int xmlDocDump(FILE *f, xmlDocPtr cur)
+{
     return(xmlDocFormatDump (f, cur, 0));
 }
 
@@ -2586,8 +2557,8 @@ xmlDocDump(FILE *f, xmlDocPtr cur) {
  *
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlSaveFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur, const char *encoding) {
+int xmlSaveFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur, const char *encoding)
+{
     xmlSaveCtxt ctxt;
     int ret;
 
@@ -2621,8 +2592,7 @@ xmlSaveFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur, const char *encoding) {
  *
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur,
+int xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur,
                     const char *encoding, int format)
 {
     xmlSaveCtxt ctxt;
@@ -2660,8 +2630,7 @@ xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur,
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
-int
-xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
+int xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
 			const char * encoding, int format ) {
     xmlSaveCtxt ctxt;
     xmlOutputBufferPtr buf;
@@ -2714,8 +2683,8 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
  *
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding) {
+int xmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding)
+{
     return ( xmlSaveFormatFileEnc( filename, cur, encoding, 0 ) );
 }
 
@@ -2733,8 +2702,8 @@ xmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding) {
  *
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlSaveFormatFile(const char *filename, xmlDocPtr cur, int format) {
+int xmlSaveFormatFile(const char *filename, xmlDocPtr cur, int format)
+{
     return ( xmlSaveFormatFileEnc( filename, cur, NULL, format ) );
 }
 
@@ -2748,8 +2717,8 @@ xmlSaveFormatFile(const char *filename, xmlDocPtr cur, int format) {
  * used.
  * returns: the number of bytes written or -1 in case of failure.
  */
-int
-xmlSaveFile(const char *filename, xmlDocPtr cur) {
+int xmlSaveFile(const char *filename, xmlDocPtr cur)
+{
     return(xmlSaveFormatFileEnc(filename, cur, NULL, 0));
 }
 
