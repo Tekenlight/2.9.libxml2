@@ -238,6 +238,26 @@ XMLPUBFUN void XMLCALL
 					 xmlSchemaValidityLocatorFunc f,
 					 void *ctxt);
 
+/*
+ * Interface for accessing components of pased schema
+ */
+typedef struct _xmlSchemaType xmlSchemaType;
+typedef xmlSchemaType *xmlSchemaTypePtr;
+
+XMLPUBFUN xmlSchemaTypePtr XMLCALL
+xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName);
+
+typedef struct _xmlSchemaElement xmlSchemaElement;
+typedef xmlSchemaElement *xmlSchemaElementPtr;
+
+XMLPUBFUN xmlSchemaElementPtr XMLCALL
+xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName);
+
+XMLPUBFUN xmlSchemaElementPtr* XMLCALL
+xmlSchemaGetGlobalElements(xmlSchemaPtr schema);
+
 #ifdef __cplusplus
 }
 #endif

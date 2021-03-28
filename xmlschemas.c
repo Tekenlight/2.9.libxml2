@@ -4774,7 +4774,7 @@ xmlSchemaGetProp(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
  * Returns the element declaration or NULL if not found.
  */
 static xmlSchemaElementPtr
-xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
+low_xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
                  const xmlChar * nsName)
 {
     xmlSchemaElementPtr ret = NULL;
@@ -4797,6 +4797,60 @@ exit:
     return (ret);
 }
 
+xmlSchemaElementPtr
+xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName)
+{
+	return low_xmlSchemaGetElem(schema, name, nsName);
+}
+
+struct name_s {
+	xmlSchemaElementPtr* element_array;
+	int count;
+};
+
+static void
+appendElementDecl(void *payload, void *data,
+					const xmlChar * name ATTRIBUTE_UNUSED,
+					const xmlChar * namespace ATTRIBUTE_UNUSED,
+					const xmlChar * context ATTRIBUTE_UNUSED)
+{
+    xmlSchemaElementPtr elem = (xmlSchemaElementPtr) payload;
+    struct name_s* dataPtr = (struct name_s *) data;
+
+	if ((dataPtr->count % 10) == 0) {
+		if (dataPtr->count) {
+			dataPtr->element_array = (xmlSchemaElementPtr*)xmlRealloc(dataPtr->element_array,
+											(dataPtr->count + 10) * sizeof(xmlSchemaElementPtr));
+		}
+		else {
+			dataPtr->element_array = (xmlSchemaElementPtr*)xmlMalloc( 10 * sizeof(xmlSchemaElementPtr));
+		}
+		memset((dataPtr->element_array + dataPtr->count) , 0, 10*sizeof(xmlSchemaElementPtr));
+	}
+
+	dataPtr->element_array[dataPtr->count] = elem;
+	dataPtr->count++;
+
+
+	return;
+}
+
+xmlSchemaElementPtr*
+xmlSchemaGetGlobalElements(xmlSchemaPtr schema)
+{
+	xmlSchemaElementPtr* elements = NULL;
+	struct name_s names_holder; 
+
+	memset(&names_holder, 0, sizeof(struct name_s));
+
+    xmlHashScanFull(schema->elemDecl, appendElementDecl, &names_holder);
+
+	elements = names_holder.element_array;
+
+	return elements;
+}
+
 /**
  * xmlSchemaGetType:
  * @schema:  the main schema
@@ -4808,7 +4862,7 @@ exit:
  * Returns the group definition or NULL if not found.
  */
 static xmlSchemaTypePtr
-xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
+low_xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
                  const xmlChar * nsName)
 {
     xmlSchemaTypePtr ret = NULL;
@@ -4842,6 +4896,22 @@ exit:
     }
 #endif
     return (ret);
+}
+/**
+ * xmlSchemaGetType:
+ * @schema:  the main schema
+ * @name:  the type's name
+ * nsName:  the type's namespace
+ *
+ * Lookup a type in the schemas or the predefined types
+ *
+ * Returns the group definition or NULL if not found.
+ */
+xmlSchemaTypePtr
+xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName)
+{
+	return low_xmlSchemaGetType(schema, name, nsName);
 }
 
 /**
