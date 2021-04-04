@@ -5985,6 +5985,51 @@ xmlSchemaPValAttrNodeQName(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
+ * xmlSchemaGetRefQName:
+ * @ctxt:  a schema parser context
+ * @schema: the schema context
+ * @node: the node fro where the property has be extracted
+ * @propName: the property name
+ * @uri:  the resulting namespace URI if found
+ * @local: the resulting local part if found, the attribute value otherwise
+ *
+ * Extracts the QName of the property of a node
+ *
+ */
+xmlSchemaQnamePtr
+xmlSchemaGetQNameOfProp(xmlSchemaParserCtxtPtr ctxt,
+						xmlSchemaPtr schema,
+						xmlNodePtr node,
+						const xmlChar * propName)
+{
+    xmlAttrPtr attr = NULL;
+	xmlSchemaQnamePtr qname = NULL;;
+	qname = (xmlSchemaQnamePtr) xmlMalloc(sizeof(xmlSchemaQName));
+	qname->ns = NULL;
+	qname->name = NULL;
+
+    attr = xmlSchemaGetPropNode(node, (const char*)propName);
+	if (attr == NULL) return NULL;
+
+	int ret = xmlSchemaPValAttrNodeQName(ctxt, schema, NULL, attr,
+					(const xmlChar**)&(qname->ns), (const xmlChar**)&(qname->name));
+	if (0 != ret) {
+		return NULL;
+	}
+
+	return qname;
+}
+
+void
+xmlFreeSchemaQnamePtr(xmlSchemaQnamePtr ptr)
+{
+	xmlFree(ptr->ns);
+	xmlFree(ptr->name);
+	xmlFree(ptr);
+}
+
+
+/**
  * xmlSchemaPValAttrQName:
  * @ctxt:  a schema parser context
  * @schema: the schema context
@@ -8578,8 +8623,9 @@ xmlSchemaParseElement(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 		NULL, node, "name", NULL);
 	    return (NULL);
 	}
-    } else
+    } else {
 	isRef = 1;
+	}
 
     xmlSchemaPValAttrID(ctxt, node, BAD_CAST "id");
     child = node->children;
@@ -8859,8 +8905,9 @@ declaration_part:
 		    NULL, node, child,
 		    "The attribute 'type' and the <complexType> child are "
 		    "mutually exclusive", NULL);
-	    } else
+	    } else {
 		WXS_ELEM_TYPEDEF(decl) = xmlSchemaParseComplexType(ctxt, schema, child, 0);
+		}
 	    child = child->next;
 	} else if (IS_SCHEMA(child, "simpleType")) {
 	    /*
@@ -11444,8 +11491,7 @@ xmlSchemaParseModelGroup(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 	    (IS_SCHEMA(child, "sequence"))) {
 
 	    if (IS_SCHEMA(child, "element")) {
-		part = (xmlSchemaTreeItemPtr)
-		    xmlSchemaParseElement(ctxt, schema, child, &isElemRef, 0);
+		part = (xmlSchemaTreeItemPtr) xmlSchemaParseElement(ctxt, schema, child, &isElemRef, 0);
 		if (part && isElemRef)
 		    hasRefs++;
 	    } else if (IS_SCHEMA(child, "group")) {
@@ -11549,10 +11595,12 @@ xmlSchemaParseModelGroup(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 	*/
 	WXS_ADD_PENDING(ctxt, item);
     }
-    if (withParticle)
+    if (withParticle) {
 	return ((xmlSchemaTreeItemPtr) particle);
-    else
+	}
+    else {
 	return ((xmlSchemaTreeItemPtr) item);
+	}
 }
 
 /**
@@ -13356,8 +13404,9 @@ xmlSchemaResolveElementReferences(xmlSchemaElementPtr elemDecl,
     */
     if ((elemDecl->subtypes == NULL) &&
 	(elemDecl->namedType == NULL) &&
-	(elemDecl->substGroup == NULL))
+	(elemDecl->substGroup == NULL)) {
 	elemDecl->subtypes = xmlSchemaGetBuiltInType(XML_SCHEMAS_ANYTYPE);
+	}
 }
 
 /**

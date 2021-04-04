@@ -258,6 +258,22 @@ xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
 XMLPUBFUN xmlSchemaElementPtr* XMLCALL
 xmlSchemaGetGlobalElements(xmlSchemaPtr schema);
 
+/*
+ * For getting names of definitions/declarations in xsd
+ */
+
+typedef struct _xmlSchemaQName xmlSchemaQName;
+typedef xmlSchemaQName *xmlSchemaQnamePtr;
+
+XMLPUBFUN xmlSchemaQnamePtr XMLCALL
+xmlSchemaGetQNameOfProp(xmlSchemaParserCtxtPtr ctxt,
+						xmlSchemaPtr schema,
+						xmlNodePtr node,
+						const xmlChar * propName);
+
+XMLPUBFUN void XMLCALL
+xmlFreeSchemaQnamePtr(xmlSchemaQnamePtr ptr);
+
 #ifdef __cplusplus
 }
 #endif
