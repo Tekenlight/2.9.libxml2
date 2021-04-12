@@ -12831,21 +12831,37 @@ xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
 	    start = ctxt->state;
 	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
 		    elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	} else if ((particle->maxOccurs >= UNBOUNDED) &&
-	           (particle->minOccurs < 2)) {
-	    /* Special case. */
-	    start = ctxt->state;
-	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
-		elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
-		elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	} else {
-	    int counter;
-	    int maxOccurs = particle->maxOccurs == UNBOUNDED ?
-			    UNBOUNDED : particle->maxOccurs - 1;
-	    int minOccurs = particle->minOccurs < 1 ?
-			    0 : particle->minOccurs - 1;
+	} else if (particle->maxOccurs >= UNBOUNDED) {
+		if (particle->minOccurs < 2) {
+			/* Special case. */
+			start = ctxt->state;
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl);
+		} else {
+			int count = 0;
+			start = ctxt->state;
+			xmlAutomataStatePtr begin;
 
+			for (; count < particle->minOccurs; count++) {
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			}
+			begin = ctxt->state;
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			xmlAutomataNewEpsilon(ctxt->am, begin, ctxt->state);
+			ret = 1;
+
+		}
+	} else {
+		/*
+	    int counter;
+	    int maxOccurs = particle->maxOccurs - 1;
+	    int minOccurs = particle->minOccurs < 1 ?  0 : particle->minOccurs - 1;
 	    start = xmlAutomataNewEpsilon(ctxt->am, ctxt->state, NULL);
 	    counter = xmlAutomataNewCounter(ctxt->am, minOccurs, maxOccurs);
 	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
@@ -12853,8 +12869,26 @@ xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
 	    xmlAutomataNewCountedTrans(ctxt->am, ctxt->state, start, counter);
 	    ctxt->state = xmlAutomataNewCounterTrans(ctxt->am, ctxt->state,
 		NULL, counter);
+		*/
+
+		int count = 0;
+		start = ctxt->state;
+		xmlAutomataStatePtr begin;
+		for (; count < particle->minOccurs; count++) {
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+		}
+		int counter = particle->maxOccurs - particle->minOccurs;
+		begin = ctxt->state;
+		for (count = 0; count < counter; count++) {
+			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			xmlAutomataNewEpsilon(ctxt->am, begin, ctxt->state);
+			begin = ctxt->state;
+		}
+		ret = 1;
 	}
-	if (particle->minOccurs == 0) {
+	if (particle->minOccurs < 1) {
 	    xmlAutomataNewEpsilon(ctxt->am, start, ctxt->state);
             ret = 1;
         }
