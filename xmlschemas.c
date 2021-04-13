@@ -12705,98 +12705,97 @@ xmlSchemaBuildContentModelForSubstGroup(xmlSchemaParserCtxtPtr pctxt,
     * Wrap the substitution group with a CHOICE.
     */
     start = pctxt->state;
-    if (end == NULL)
-	end = xmlAutomataNewState(pctxt->am);
+    if (end == NULL) end = xmlAutomataNewState(pctxt->am);
     substGroup = xmlSchemaSubstGroupGet(pctxt, elemDecl);
     if (substGroup == NULL) {
-	xmlSchemaPErr(pctxt, WXS_ITEM_NODE(particle),
-	    XML_SCHEMAP_INTERNAL,
-	    "Internal error: xmlSchemaBuildContentModelForSubstGroup, "
-	    "declaration is marked having a subst. group but none "
-	    "available.\n", elemDecl->name, NULL);
-	return(0);
+		xmlSchemaPErr(pctxt, WXS_ITEM_NODE(particle),
+			XML_SCHEMAP_INTERNAL,
+			"Internal error: xmlSchemaBuildContentModelForSubstGroup, "
+			"declaration is marked having a subst. group but none "
+			"available.\n", elemDecl->name, NULL);
+		return(0);
     }
     if (counter >= 0) {
-	/*
-	* NOTE that we put the declaration in, even if it's abstract.
-	* However, an error will be raised during *validation* if an element
-	* information item shall be validated against an abstract element
-	* declaration.
-	*/
-	tmp = xmlAutomataNewCountedTrans(pctxt->am, start, NULL, counter);
-        xmlAutomataNewTransition2(pctxt->am, tmp, end,
-	            elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	/*
-	* Add subst. group members.
-	*/
-	for (i = 0; i < substGroup->members->nbItems; i++) {
-	    member = (xmlSchemaElementPtr) substGroup->members->items[i];
-            xmlAutomataNewTransition2(pctxt->am, tmp, end,
-		               member->name, member->targetNamespace, member);
-	}
+		/*
+		* NOTE that we put the declaration in, even if it's abstract.
+		* However, an error will be raised during *validation* if an element
+		* information item shall be validated against an abstract element
+		* declaration.
+		*/
+		tmp = xmlAutomataNewCountedTrans(pctxt->am, start, NULL, counter);
+			xmlAutomataNewTransition2(pctxt->am, tmp, end,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+		/*
+		* Add subst. group members.
+		*/
+		for (i = 0; i < substGroup->members->nbItems; i++) {
+			member = (xmlSchemaElementPtr) substGroup->members->items[i];
+				xmlAutomataNewTransition2(pctxt->am, tmp, end,
+						   member->name, member->targetNamespace, member);
+		}
     } else if (particle->maxOccurs == 1) {
-	/*
-	* NOTE that we put the declaration in, even if it's abstract,
-	*/
-	xmlAutomataNewEpsilon(pctxt->am,
-	    xmlAutomataNewTransition2(pctxt->am,
-	    start, NULL,
-	    elemDecl->name, elemDecl->targetNamespace, elemDecl), end);
-	/*
-	* Add subst. group members.
-	*/
-	for (i = 0; i < substGroup->members->nbItems; i++) {
-	    member = (xmlSchemaElementPtr) substGroup->members->items[i];
-	    /*
-	    * NOTE: This fixes bug #341150. xmlAutomataNewOnceTrans2()
-	    *  was incorrectly used instead of xmlAutomataNewTransition2()
-	    *  (seems like a copy&paste bug from the XML_SCHEMA_TYPE_ALL
-	    *  section in xmlSchemaBuildAContentModel() ).
-	    * TODO: Check if xmlAutomataNewOnceTrans2() was instead
-	    *  intended for the above "counter" section originally. I.e.,
-	    *  check xs:all with subst-groups.
-	    *
-	    * tmp = xmlAutomataNewOnceTrans2(pctxt->am, start, NULL,
-	    *	               member->name, member->targetNamespace,
-	    *		       1, 1, member);
-	    */
-	    tmp = xmlAutomataNewTransition2(pctxt->am, start, NULL,
-		member->name, member->targetNamespace, member);
-	    xmlAutomataNewEpsilon(pctxt->am, tmp, end);
-	}
+		/*
+		* NOTE that we put the declaration in, even if it's abstract,
+		*/
+		xmlAutomataNewEpsilon(pctxt->am,
+			xmlAutomataNewTransition2(pctxt->am,
+			start, NULL,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl), end);
+		/*
+		* Add subst. group members.
+		*/
+		for (i = 0; i < substGroup->members->nbItems; i++) {
+			member = (xmlSchemaElementPtr) substGroup->members->items[i];
+			/*
+			* NOTE: This fixes bug #341150. xmlAutomataNewOnceTrans2()
+			*  was incorrectly used instead of xmlAutomataNewTransition2()
+			*  (seems like a copy&paste bug from the XML_SCHEMA_TYPE_ALL
+			*  section in xmlSchemaBuildAContentModel() ).
+			* TODO: Check if xmlAutomataNewOnceTrans2() was instead
+			*  intended for the above "counter" section originally. I.e.,
+			*  check xs:all with subst-groups.
+			*
+			* tmp = xmlAutomataNewOnceTrans2(pctxt->am, start, NULL,
+			*	               member->name, member->targetNamespace,
+			*		       1, 1, member);
+			*/
+			tmp = xmlAutomataNewTransition2(pctxt->am, start, NULL,
+			member->name, member->targetNamespace, member);
+			xmlAutomataNewEpsilon(pctxt->am, tmp, end);
+		}
     } else {
-	xmlAutomataStatePtr hop;
-	int maxOccurs = particle->maxOccurs == UNBOUNDED ?
-	    UNBOUNDED : particle->maxOccurs - 1;
-	int minOccurs = particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
+		xmlAutomataStatePtr hop;
+		int maxOccurs = particle->maxOccurs == UNBOUNDED ?
+			UNBOUNDED : particle->maxOccurs - 1;
+		int minOccurs = particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
 
-	counter =
-	    xmlAutomataNewCounter(pctxt->am, minOccurs,
-	    maxOccurs);
-	hop = xmlAutomataNewState(pctxt->am);
+		counter =
+			xmlAutomataNewCounter(pctxt->am, minOccurs,
+			maxOccurs);
+		hop = xmlAutomataNewState(pctxt->am);
 
-	xmlAutomataNewEpsilon(pctxt->am,
-	    xmlAutomataNewTransition2(pctxt->am,
-	    start, NULL,
-	    elemDecl->name, elemDecl->targetNamespace, elemDecl),
-	    hop);
-	/*
-	 * Add subst. group members.
-	 */
-	for (i = 0; i < substGroup->members->nbItems; i++) {
-	    member = (xmlSchemaElementPtr) substGroup->members->items[i];
-	    xmlAutomataNewEpsilon(pctxt->am,
-		xmlAutomataNewTransition2(pctxt->am,
-		start, NULL,
-		member->name, member->targetNamespace, member),
-		hop);
-	}
-	xmlAutomataNewCountedTrans(pctxt->am, hop, start, counter);
-	xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
+		xmlAutomataNewEpsilon(pctxt->am,
+			xmlAutomataNewTransition2(pctxt->am,
+			start, NULL,
+			elemDecl->name, elemDecl->targetNamespace, elemDecl),
+			hop);
+		/*
+		 * Add subst. group members.
+		 */
+		for (i = 0; i < substGroup->members->nbItems; i++) {
+			member = (xmlSchemaElementPtr) substGroup->members->items[i];
+			xmlAutomataNewEpsilon(pctxt->am,
+			xmlAutomataNewTransition2(pctxt->am,
+			start, NULL,
+			member->name, member->targetNamespace, member),
+			hop);
+		}
+		xmlAutomataNewCountedTrans(pctxt->am, hop, start, counter);
+		xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
     }
     if (particle->minOccurs == 0) {
-	xmlAutomataNewEpsilon(pctxt->am, start, end);
-        ret = 1;
+		xmlAutomataNewEpsilon(pctxt->am, start, end);
+		ret = 1;
     }
     pctxt->state = end;
     return(ret);
@@ -12809,90 +12808,142 @@ xmlSchemaBuildContentModelForSubstGroup(xmlSchemaParserCtxtPtr pctxt,
  */
 static int
 xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
-				     xmlSchemaParticlePtr particle)
+				     xmlSchemaParticlePtr particle, int forUpa)
 {
     int ret = 0;
 
-    if (((xmlSchemaElementPtr) particle->children)->flags &
-	XML_SCHEMAS_ELEM_SUBST_GROUP_HEAD) {
-	/*
-	* Substitution groups.
-	*/
-	ret = xmlSchemaBuildContentModelForSubstGroup(ctxt, particle, -1, NULL);
-    } else {
-	xmlSchemaElementPtr elemDecl;
-	xmlAutomataStatePtr start;
-
-	elemDecl = (xmlSchemaElementPtr) particle->children;
-
-	if (elemDecl->flags & XML_SCHEMAS_ELEM_ABSTRACT)
-	    return(0);
-	if (particle->maxOccurs == 1) {
-	    start = ctxt->state;
-	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
-		    elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	} else if (particle->maxOccurs >= UNBOUNDED) {
-		if (particle->minOccurs < 2) {
-			/* Special case. */
-			start = ctxt->state;
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
-			elemDecl->name, elemDecl->targetNamespace, elemDecl);
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
-			elemDecl->name, elemDecl->targetNamespace, elemDecl);
+	if (forUpa) {
+		if (((xmlSchemaElementPtr) particle->children)->flags &
+				XML_SCHEMAS_ELEM_SUBST_GROUP_HEAD) {
+			/*
+			* Substitution groups.
+			*/
+			ret = xmlSchemaBuildContentModelForSubstGroup(ctxt, particle, -1, NULL);
 		} else {
-			int count = 0;
-			start = ctxt->state;
-			xmlAutomataStatePtr begin;
+			xmlSchemaElementPtr elemDecl;
+			xmlAutomataStatePtr start;
 
-			for (; count < particle->minOccurs; count++) {
-				ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+			elemDecl = (xmlSchemaElementPtr) particle->children;
+
+			if (elemDecl->flags & XML_SCHEMAS_ELEM_ABSTRACT)
+				return(0);
+			if (particle->maxOccurs == 1) {
+				start = ctxt->state;
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
 					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			} else if (particle->maxOccurs >= UNBOUNDED) {
+				if (particle->minOccurs < 2) {
+					/* Special case. */
+					start = ctxt->state;
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+				} else {
+					int count = 0;
+					start = ctxt->state;
+					xmlAutomataStatePtr begin;
+
+					for (; count < particle->minOccurs; count++) {
+						ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+							elemDecl->name, elemDecl->targetNamespace, elemDecl);
+					}
+					begin = ctxt->state;
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+					xmlAutomataNewEpsilon(ctxt->am, begin, ctxt->state);
+					ret = 1;
+
+				}
+			} else {
+				/*
+				int counter;
+				int maxOccurs = particle->maxOccurs - 1;
+				int minOccurs = particle->minOccurs < 1 ?  0 : particle->minOccurs - 1;
+				start = xmlAutomataNewEpsilon(ctxt->am, ctxt->state, NULL);
+				counter = xmlAutomataNewCounter(ctxt->am, minOccurs, maxOccurs);
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+				xmlAutomataNewCountedTrans(ctxt->am, ctxt->state, start, counter);
+				ctxt->state = xmlAutomataNewCounterTrans(ctxt->am, ctxt->state,
+				NULL, counter);
+				*/
+
+				int count = 0;
+				xmlAutomataStatePtr end = NULL;;
+
+				start = ctxt->state;
+				end = xmlAutomataNewState(ctxt->am);
+				for (; count < particle->minOccurs; count++) {
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+						elemDecl->name, elemDecl->targetNamespace, elemDecl);
+				}
+				int counter = particle->maxOccurs - particle->minOccurs;
+				if (counter>0) xmlAutomataNewEpsilon(ctxt->am, ctxt->state, end);
+				for (count = 0; count < counter; count++) {
+					ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
+						elemDecl->name, elemDecl->targetNamespace, elemDecl);
+					xmlAutomataNewEpsilon(ctxt->am, ctxt->state, end);
+				}
+				ctxt->state = end;
+				ret = 1;
 			}
-			begin = ctxt->state;
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
-			elemDecl->name, elemDecl->targetNamespace, elemDecl);
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
-			elemDecl->name, elemDecl->targetNamespace, elemDecl);
-			xmlAutomataNewEpsilon(ctxt->am, begin, ctxt->state);
-			ret = 1;
-
+			if (particle->minOccurs < 1) {
+				xmlAutomataNewEpsilon(ctxt->am, start, ctxt->state);
+					ret = 1;
+			}
 		}
-	} else {
-		/*
-	    int counter;
-	    int maxOccurs = particle->maxOccurs - 1;
-	    int minOccurs = particle->minOccurs < 1 ?  0 : particle->minOccurs - 1;
-	    start = xmlAutomataNewEpsilon(ctxt->am, ctxt->state, NULL);
-	    counter = xmlAutomataNewCounter(ctxt->am, minOccurs, maxOccurs);
-	    ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
-		elemDecl->name, elemDecl->targetNamespace, elemDecl);
-	    xmlAutomataNewCountedTrans(ctxt->am, ctxt->state, start, counter);
-	    ctxt->state = xmlAutomataNewCounterTrans(ctxt->am, ctxt->state,
-		NULL, counter);
-		*/
-
-		int count = 0;
-		start = ctxt->state;
-		xmlAutomataStatePtr begin;
-		for (; count < particle->minOccurs; count++) {
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
-				elemDecl->name, elemDecl->targetNamespace, elemDecl);
-		}
-		int counter = particle->maxOccurs - particle->minOccurs;
-		begin = ctxt->state;
-		for (count = 0; count < counter; count++) {
-			ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, NULL,
-				elemDecl->name, elemDecl->targetNamespace, elemDecl);
-			xmlAutomataNewEpsilon(ctxt->am, begin, ctxt->state);
-			begin = ctxt->state;
-		}
-		ret = 1;
 	}
-	if (particle->minOccurs < 1) {
-	    xmlAutomataNewEpsilon(ctxt->am, start, ctxt->state);
-            ret = 1;
-        }
-    }
+	else {
+		if (((xmlSchemaElementPtr) particle->children)->flags &
+					XML_SCHEMAS_ELEM_SUBST_GROUP_HEAD) {
+			/*
+			* Substitution groups.
+			*/
+			ret = xmlSchemaBuildContentModelForSubstGroup(ctxt, particle, -1, NULL);
+		} else {
+			xmlSchemaElementPtr elemDecl;
+			xmlAutomataStatePtr start;
+
+			elemDecl = (xmlSchemaElementPtr) particle->children;
+
+			if (elemDecl->flags & XML_SCHEMAS_ELEM_ABSTRACT)
+				return(0);
+			if (particle->maxOccurs == 1) {
+				start = ctxt->state;
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+					elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			} else if ((particle->maxOccurs >= UNBOUNDED) &&
+					   (particle->minOccurs < 2)) {
+				/* Special case. */
+				start = ctxt->state;
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, ctxt->state, ctxt->state,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+			} else {
+				int counter;
+				int maxOccurs = particle->maxOccurs == UNBOUNDED ?
+						UNBOUNDED : particle->maxOccurs - 1;
+				int minOccurs = particle->minOccurs < 1 ?
+						0 : particle->minOccurs - 1;
+
+				start = xmlAutomataNewEpsilon(ctxt->am, ctxt->state, NULL);
+				counter = xmlAutomataNewCounter(ctxt->am, minOccurs, maxOccurs);
+				ctxt->state = xmlAutomataNewTransition2(ctxt->am, start, NULL,
+				elemDecl->name, elemDecl->targetNamespace, elemDecl);
+				xmlAutomataNewCountedTrans(ctxt->am, ctxt->state, start, counter);
+				ctxt->state = xmlAutomataNewCounterTrans(ctxt->am, ctxt->state,
+				NULL, counter);
+			}
+			if (particle->minOccurs == 0) {
+				xmlAutomataNewEpsilon(ctxt->am, start, ctxt->state);
+					ret = 1;
+			}
+		}
+	}
     return(ret);
 }
 
@@ -12908,7 +12959,7 @@ xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
  */
 static int
 xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
-			    xmlSchemaParticlePtr particle)
+			    xmlSchemaParticlePtr particle, int forUpa)
 {
     int ret = 0, tmp2;
 
@@ -13015,202 +13066,445 @@ xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
             break;
 	}
         case XML_SCHEMA_TYPE_ELEMENT:
-	    ret = xmlSchemaBuildContentModelForElement(pctxt, particle);
+	    ret = xmlSchemaBuildContentModelForElement(pctxt, particle, forUpa);
 	    break;
-        case XML_SCHEMA_TYPE_SEQUENCE:{
-            xmlSchemaTreeItemPtr sub;
+        case XML_SCHEMA_TYPE_SEQUENCE: {
+			if (forUpa) {
+				xmlSchemaTreeItemPtr sub;
 
-            ret = 1;
-            /*
-             * If max and min occurrences are default (1) then
-             * simply iterate over the particles of the <sequence>.
-             */
-            if ((particle->minOccurs == 1) && (particle->maxOccurs == 1)) {
-                sub = particle->children->children;
+				ret = 1;
+				/*
+				 * If max and min occurrences are default (1) then
+				 * simply iterate over the particles of the <sequence>.
+				 */
+				if (particle->maxOccurs == 1) {
+					xmlAutomataStatePtr oldstate = pctxt->state;
+					pctxt->state = xmlAutomataNewEpsilon(pctxt->am, oldstate, NULL);
+					oldstate = pctxt->state;
+					sub = particle->children->children;
+					while (sub != NULL) {
+						tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+						if (tmp2 != 1) ret = 0;
+						sub = sub->next;
+					}
+					if (particle->minOccurs == 0) {
+						xmlAutomataNewEpsilon(pctxt->am, oldstate, pctxt->state);
+					}
+				} else {
+					xmlAutomataStatePtr oldstate = pctxt->state;
 
-                while (sub != NULL) {
-                    tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                    if (tmp2 != 1) ret = 0;
-                    sub = sub->next;
-                }
-            } else {
-                xmlAutomataStatePtr oldstate = pctxt->state;
+					if (particle->maxOccurs >= UNBOUNDED) {
+						if (particle->minOccurs > 1) {
+							int count = 0;
+							xmlAutomataStatePtr begin = NULL;
 
-                if (particle->maxOccurs >= UNBOUNDED) {
-                    if (particle->minOccurs > 1) {
-                        xmlAutomataStatePtr tmp;
-                        int counter;
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am, oldstate, NULL);
+							oldstate = pctxt->state;
 
-                        pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
-                            oldstate, NULL);
-                        oldstate = pctxt->state;
+							for (count = 0; count < particle->minOccurs; count++) {
+								sub = particle->children->children;
+								while (sub != NULL) {
+									tmp2 = xmlSchemaBuildAContentModel(pctxt,
+													(xmlSchemaParticlePtr) sub, forUpa);
+									if (tmp2 != 1) ret = 0;
+									sub = sub->next;
+								}
+							}
 
-                        counter = xmlAutomataNewCounter(pctxt->am,
-                            particle->minOccurs - 1, UNBOUNDED);
+							begin = pctxt->state;
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+													(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, begin);
 
-                        sub = particle->children->children;
-                        while (sub != NULL) {
-                            tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                            (xmlSchemaParticlePtr) sub);
-                            if (tmp2 != 1) ret = 0;
-                            sub = sub->next;
-                        }
-                        tmp = pctxt->state;
-                        xmlAutomataNewCountedTrans(pctxt->am, tmp,
-                                                   oldstate, counter);
-                        pctxt->state =
-                            xmlAutomataNewCounterTrans(pctxt->am, tmp,
-                                                       NULL, counter);
-                        if (ret == 1)
-                            xmlAutomataNewEpsilon(pctxt->am,
-                                                oldstate, pctxt->state);
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am, pctxt->state, NULL);
 
-                    } else {
-                        pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
-                            oldstate, NULL);
-                        oldstate = pctxt->state;
+							xmlAutomataNewEpsilon(pctxt->am, begin, pctxt->state);
+						} else {
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+								oldstate, NULL);
+							oldstate = pctxt->state;
 
-                        sub = particle->children->children;
-                        while (sub != NULL) {
-                            tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                            if (tmp2 != 1) ret = 0;
-                            sub = sub->next;
-                        }
-                        xmlAutomataNewEpsilon(pctxt->am, pctxt->state,
-                                              oldstate);
-                        /*
-                         * epsilon needed to block previous trans from
-                         * being allowed to enter back from another
-                         * construct
-                         */
-                        pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
-                                            pctxt->state, NULL);
-                        if (particle->minOccurs == 0) {
-                            xmlAutomataNewEpsilon(pctxt->am,
-                                oldstate, pctxt->state);
-                            ret = 1;
-                        }
-                    }
-                } else if ((particle->maxOccurs > 1)
-                           || (particle->minOccurs > 1)) {
-                    xmlAutomataStatePtr tmp;
-                    int counter;
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state,
+												  oldstate);
+							/*
+							 * epsilon needed to block previous trans from
+							 * being allowed to enter back from another
+							 * construct
+							 */
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+												pctxt->state, NULL);
+							if (particle->minOccurs == 0) {
+								xmlAutomataNewEpsilon(pctxt->am,
+									oldstate, pctxt->state);
+								ret = 1;
+							}
+						}
+					} else {
+						int count = 0;
+						int counter = 0;
+						xmlAutomataStatePtr end = NULL;
 
-                    pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
-                        oldstate, NULL);
-                    oldstate = pctxt->state;
+						end = xmlAutomataNewState(pctxt->am);
+						xmlAutomataStatePtr begin = pctxt->state;
 
-                    counter = xmlAutomataNewCounter(pctxt->am,
-                        particle->minOccurs - 1,
-                        particle->maxOccurs - 1);
+						for (; count < particle->minOccurs ; count++) {
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+												(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+						}
 
-                    sub = particle->children->children;
-                    while (sub != NULL) {
-                        tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                        if (tmp2 != 1) ret = 0;
-                        sub = sub->next;
-                    }
-                    tmp = pctxt->state;
-                    xmlAutomataNewCountedTrans(pctxt->am,
-                        tmp, oldstate, counter);
-                    pctxt->state =
-                        xmlAutomataNewCounterTrans(pctxt->am, tmp, NULL,
-                                                   counter);
-                    if ((particle->minOccurs == 0) || (ret == 1)) {
-                        xmlAutomataNewEpsilon(pctxt->am,
-                                            oldstate, pctxt->state);
-                        ret = 1;
-                    }
-                } else {
-                    sub = particle->children->children;
-                    while (sub != NULL) {
-                        tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                        if (tmp2 != 1) ret = 0;
-                        sub = sub->next;
-                    }
+						counter = particle->maxOccurs - particle->minOccurs;
+						if (counter>0) xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+						for (count = 0; count < counter; count++) {
 
-		    /*
-		     * epsilon needed to block previous trans from
-		     * being allowed to enter back from another
-		     * construct
-		     */
-		    pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
-					pctxt->state, NULL);
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+												(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+						}
 
-                    if (particle->minOccurs == 0) {
-                        xmlAutomataNewEpsilon(pctxt->am, oldstate,
-                                              pctxt->state);
-                        ret = 1;
-                    }
-                }
-            }
-            break;
-        }
-        case XML_SCHEMA_TYPE_CHOICE:{
-            xmlSchemaTreeItemPtr sub;
-            xmlAutomataStatePtr start, end;
+						pctxt->state = end;
 
-            ret = 0;
-            start = pctxt->state;
-            end = xmlAutomataNewState(pctxt->am);
+						pctxt->state = xmlAutomataNewEpsilon(pctxt->am, pctxt->state, NULL);
 
-            /*
-             * iterate over the subtypes and remerge the end with an
-             * epsilon transition
-             */
-            if (particle->maxOccurs == 1) {
-                sub = particle->children->children;
-                while (sub != NULL) {
-                    pctxt->state = start;
-                    tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                    if (tmp2 == 1) ret = 1;
-                    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
-                    sub = sub->next;
-                }
-            } else {
-                int counter;
-                xmlAutomataStatePtr hop, base;
-                int maxOccurs = particle->maxOccurs == UNBOUNDED ?
-                    UNBOUNDED : particle->maxOccurs - 1;
-                int minOccurs =
-                    particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
+						if (particle->minOccurs == 0) {
+							xmlAutomataNewEpsilon(pctxt->am, begin, pctxt->state);
+							ret = 1;
+						}
+					}
+				}
+				break;
+			}
+			else {
+				xmlSchemaTreeItemPtr sub;
 
-                /*
-                 * use a counter to keep track of the number of transitions
-                 * which went through the choice.
-                 */
-                counter =
-                    xmlAutomataNewCounter(pctxt->am, minOccurs, maxOccurs);
-                hop = xmlAutomataNewState(pctxt->am);
-                base = xmlAutomataNewState(pctxt->am);
+				ret = 1;
+				/*
+				 * If max and min occurrences are default (1) then
+				 * simply iterate over the particles of the <sequence>.
+				 */
+				if ((particle->minOccurs == 1) && (particle->maxOccurs == 1)) {
+					sub = particle->children->children;
 
-                sub = particle->children->children;
-                while (sub != NULL) {
-                    pctxt->state = base;
-                    tmp2 = xmlSchemaBuildAContentModel(pctxt,
-                                        (xmlSchemaParticlePtr) sub);
-                    if (tmp2 == 1) ret = 1;
-                    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
-                    sub = sub->next;
-                }
-                xmlAutomataNewEpsilon(pctxt->am, start, base);
-                xmlAutomataNewCountedTrans(pctxt->am, hop, base, counter);
-                xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
-                if (ret == 1)
-                    xmlAutomataNewEpsilon(pctxt->am, base, end);
-            }
-            if (particle->minOccurs == 0) {
-                xmlAutomataNewEpsilon(pctxt->am, start, end);
-                ret = 1;
-            }
-            pctxt->state = end;
-            break;
-        }
+					while (sub != NULL) {
+						tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+						if (tmp2 != 1) ret = 0;
+						sub = sub->next;
+					}
+				} else {
+					xmlAutomataStatePtr oldstate = pctxt->state;
+
+					if (particle->maxOccurs >= UNBOUNDED) {
+						if (particle->minOccurs > 1) {
+							xmlAutomataStatePtr tmp;
+							int counter;
+
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+								oldstate, NULL);
+							oldstate = pctxt->state;
+
+							counter = xmlAutomataNewCounter(pctxt->am,
+								particle->minOccurs - 1, UNBOUNDED);
+
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+												(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+							tmp = pctxt->state;
+							xmlAutomataNewCountedTrans(pctxt->am, tmp,
+													   oldstate, counter);
+							pctxt->state =
+								xmlAutomataNewCounterTrans(pctxt->am, tmp,
+														   NULL, counter);
+							if (ret == 1)
+								xmlAutomataNewEpsilon(pctxt->am,
+													oldstate, pctxt->state);
+
+						} else {
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+								oldstate, NULL);
+							oldstate = pctxt->state;
+
+							sub = particle->children->children;
+							while (sub != NULL) {
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 != 1) ret = 0;
+								sub = sub->next;
+							}
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state,
+												  oldstate);
+							/*
+							 * epsilon needed to block previous trans from
+							 * being allowed to enter back from another
+							 * construct
+							 */
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+												pctxt->state, NULL);
+							if (particle->minOccurs == 0) {
+								xmlAutomataNewEpsilon(pctxt->am,
+									oldstate, pctxt->state);
+								ret = 1;
+							}
+						}
+					} else if ((particle->maxOccurs > 1)
+							   || (particle->minOccurs > 1)) {
+						xmlAutomataStatePtr tmp;
+						int counter;
+
+						pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+							oldstate, NULL);
+						oldstate = pctxt->state;
+
+						counter = xmlAutomataNewCounter(pctxt->am,
+							particle->minOccurs - 1,
+							particle->maxOccurs - 1);
+
+						sub = particle->children->children;
+						while (sub != NULL) {
+							tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+							if (tmp2 != 1) ret = 0;
+							sub = sub->next;
+						}
+						tmp = pctxt->state;
+						xmlAutomataNewCountedTrans(pctxt->am,
+							tmp, oldstate, counter);
+						pctxt->state =
+							xmlAutomataNewCounterTrans(pctxt->am, tmp, NULL,
+													   counter);
+						if ((particle->minOccurs == 0) || (ret == 1)) {
+							xmlAutomataNewEpsilon(pctxt->am,
+												oldstate, pctxt->state);
+							ret = 1;
+						}
+					} else {
+						sub = particle->children->children;
+						while (sub != NULL) {
+							tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+							if (tmp2 != 1) ret = 0;
+							sub = sub->next;
+						}
+
+						/*
+						 * epsilon needed to block previous trans from
+						 * being allowed to enter back from another
+						 * construct
+						 */
+						pctxt->state = xmlAutomataNewEpsilon(pctxt->am,
+								pctxt->state, NULL);
+
+						if (particle->minOccurs == 0) {
+							xmlAutomataNewEpsilon(pctxt->am, oldstate,
+												  pctxt->state);
+							ret = 1;
+						}
+					}
+				}
+				break;
+			}
+		}
+        case XML_SCHEMA_TYPE_CHOICE: {
+			if (forUpa) {
+				xmlSchemaTreeItemPtr sub;
+				xmlAutomataStatePtr start, end;
+
+				ret = 0;
+				start = pctxt->state;
+				end = xmlAutomataNewState(pctxt->am);
+
+				/*
+				 * iterate over the subtypes and remerge the end with an
+				 * epsilon transition
+				 */
+				if (particle->maxOccurs == 1) {
+					sub = particle->children->children;
+					while (sub != NULL) {
+						pctxt->state = start;
+						tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+						if (tmp2 == 1) ret = 1;
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+						sub = sub->next;
+					}
+				} else {
+					int count = 0;
+					int counter = 0;
+					xmlAutomataStatePtr hop = NULL, base = NULL;
+					base = pctxt->state;
+					if (particle->minOccurs >= 1) {
+						int added = 0;
+						for (count = 0; count < particle->minOccurs; count++) {
+							sub = particle->children->children;
+							while (sub != NULL) {
+								if (!hop) hop = xmlAutomataNewState(pctxt->am);
+								added = 1;
+								pctxt->state = base;
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+													(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 == 1) ret = 1;
+								xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+								sub = sub->next;
+							}
+							if (added) {
+								pctxt->state = hop;
+								pctxt->state = xmlAutomataNewEpsilon(pctxt->am, pctxt->state, NULL);
+								base = pctxt->state;
+							}
+							added = 0;
+							hop = NULL;
+						}
+					}
+					base = pctxt->state;
+					if (particle->maxOccurs >= UNBOUNDED) {
+						int added = 0;
+						hop = NULL;
+						sub = particle->children->children;
+						while (sub != NULL) {
+							if (!hop) hop = xmlAutomataNewState(pctxt->am);
+							added = 1;
+							pctxt->state = base;
+							tmp2 = xmlSchemaBuildAContentModel(pctxt,
+												(xmlSchemaParticlePtr) sub, forUpa);
+							if (tmp2 == 1) ret = 1;
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+							sub = sub->next;
+						}
+						if (added) {
+							xmlAutomataNewEpsilon(pctxt->am, hop, base);
+							pctxt->state = hop;
+							pctxt->state = xmlAutomataNewEpsilon(pctxt->am, pctxt->state, NULL);
+							base = pctxt->state;
+						}
+						added = 0;
+					}
+					else {
+						int added = 0;
+						xmlAutomataStatePtr interim_end = NULL;
+						interim_end = xmlAutomataNewState(pctxt->am);
+						counter = particle->maxOccurs - particle->minOccurs;
+						hop = NULL;
+						if (counter>0) xmlAutomataNewEpsilon(pctxt->am, base, interim_end);
+						for (count = 0; count < counter; count++) {
+							sub = particle->children->children;
+							while (sub != NULL) {
+								if (!hop) hop = xmlAutomataNewState(pctxt->am);
+								added = 1;
+								pctxt->state = base;
+								tmp2 = xmlSchemaBuildAContentModel(pctxt,
+													(xmlSchemaParticlePtr) sub, forUpa);
+								if (tmp2 == 1) ret = 1;
+								xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+								sub = sub->next;
+							}
+							if (added) {
+								xmlAutomataNewEpsilon(pctxt->am, hop, interim_end);
+								pctxt->state = hop;
+								hop = NULL;
+								base = pctxt->state;
+							}
+							added = 0;
+							hop = NULL;
+						}
+						pctxt->state = interim_end;
+					}
+					xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+					ret = 1;
+				}
+				if (particle->minOccurs == 0) {
+					xmlAutomataNewEpsilon(pctxt->am, start, end);
+					ret = 1;
+				}
+				pctxt->state = end;
+				break;
+			} else {
+				xmlSchemaTreeItemPtr sub;
+				xmlAutomataStatePtr start, end;
+
+				ret = 0;
+				start = pctxt->state;
+				end = xmlAutomataNewState(pctxt->am);
+
+				/*
+				 * iterate over the subtypes and remerge the end with an
+				 * epsilon transition
+				 */
+				if (particle->maxOccurs == 1) {
+					sub = particle->children->children;
+					while (sub != NULL) {
+						pctxt->state = start;
+						tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+						if (tmp2 == 1) ret = 1;
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+						sub = sub->next;
+					}
+				} else {
+					int counter;
+					xmlAutomataStatePtr hop, base;
+					int maxOccurs = particle->maxOccurs == UNBOUNDED ?
+						UNBOUNDED : particle->maxOccurs - 1;
+					int minOccurs =
+						particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
+
+					/*
+					 * use a counter to keep track of the number of transitions
+					 * which went through the choice.
+					 */
+					counter =
+						xmlAutomataNewCounter(pctxt->am, minOccurs, maxOccurs);
+					hop = xmlAutomataNewState(pctxt->am);
+					base = xmlAutomataNewState(pctxt->am);
+
+					sub = particle->children->children;
+					while (sub != NULL) {
+						pctxt->state = base;
+						tmp2 = xmlSchemaBuildAContentModel(pctxt,
+											(xmlSchemaParticlePtr) sub, forUpa);
+						if (tmp2 == 1) ret = 1;
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+						sub = sub->next;
+					}
+					xmlAutomataNewEpsilon(pctxt->am, start, base);
+					xmlAutomataNewCountedTrans(pctxt->am, hop, base, counter);
+					xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
+					if (ret == 1)
+						xmlAutomataNewEpsilon(pctxt->am, base, end);
+				}
+				if (particle->minOccurs == 0) {
+					xmlAutomataNewEpsilon(pctxt->am, start, end);
+					ret = 1;
+				}
+				pctxt->state = end;
+				break;
+			}
+		}
         case XML_SCHEMA_TYPE_ALL:{
             xmlAutomataStatePtr start, tmp;
             xmlSchemaParticlePtr sub;
@@ -13253,8 +13547,7 @@ xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
                      */
                     counter = xmlAutomataNewCounter(pctxt->am,
                                        sub->minOccurs, sub->maxOccurs);
-                    xmlSchemaBuildContentModelForSubstGroup(pctxt,
-                                       sub, counter, pctxt->state);
+                    xmlSchemaBuildContentModelForSubstGroup(pctxt, sub, counter, pctxt->state);
                 } else {
                     if ((sub->minOccurs == 1) &&
                         (sub->maxOccurs == 1)) {
@@ -13327,41 +13620,89 @@ xmlSchemaBuildContentModel(xmlSchemaTypePtr type,
     xmlGenericError(xmlGenericErrorContext,
                     "Building content model for %s\n", name);
 #endif
-    ctxt->am = NULL;
-    ctxt->am = xmlNewAutomata();
-    if (ctxt->am == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
-	    "Cannot create automata for complex type %s\n", type->name);
-        return;
-    }
-    ctxt->state = xmlAutomataGetInitState(ctxt->am);
-    /*
-    * Build the automaton.
-    */
-    xmlSchemaBuildAContentModel(ctxt, WXS_TYPE_PARTICLE(type));
-    xmlAutomataSetFinalState(ctxt->am, ctxt->state);
-    type->contModel = xmlAutomataCompile(ctxt->am);
-    if (type->contModel == NULL) {
-        xmlSchemaPCustomErr(ctxt,
-	    XML_SCHEMAP_INTERNAL,
-	    WXS_BASIC_CAST type, type->node,
-	    "Failed to compile the content model", NULL);
-    } else if (xmlRegexpIsDeterminist(type->contModel) != 1) {
-        xmlSchemaPCustomErr(ctxt,
-	    XML_SCHEMAP_NOT_DETERMINISTIC,
-	    /* XML_SCHEMAS_ERR_NOTDETERMINIST, */
-	    WXS_BASIC_CAST type, type->node,
-	    "The content model is not determinist", NULL);
-    } else {
+	{
+		/*
+		 * This phase of content model is built to test the determinism of the content
+		 * model. This will be built without counters and with certain inefficiencies in
+		 * terms of the size of the automaton.
+		 * Next phase will build the automaton with optimizations in place.
+		 */
+		xmlRegexpPtr contModel = NULL;
+
+		ctxt->am = NULL;
+		ctxt->am = xmlNewAutomata();
+		if (ctxt->am == NULL) {
+			xmlGenericError(xmlGenericErrorContext,
+			"Cannot create automata for complex type %s\n", type->name);
+			return;
+		}
+		ctxt->state = xmlAutomataGetInitState(ctxt->am);
+		/*
+		* Build the automaton.
+		*/
+		xmlSchemaBuildAContentModel(ctxt, WXS_TYPE_PARTICLE(type), 1);
+		xmlAutomataSetFinalState(ctxt->am, ctxt->state);
+		contModel = xmlAutomataCompile(ctxt->am);
+		if (contModel == NULL) {
+			xmlSchemaPCustomErr(ctxt,
+			XML_SCHEMAP_INTERNAL,
+			WXS_BASIC_CAST type, type->node,
+			"Failed to compile the content model", NULL);
+		} else if (xmlRegexpIsDeterminist(contModel) != 1) {
+			xmlSchemaPCustomErr(ctxt,
+			XML_SCHEMAP_NOT_DETERMINISTIC,
+			/* XML_SCHEMAS_ERR_NOTDETERMINIST, */
+			WXS_BASIC_CAST type, type->node,
+			"The content model is not determinist", NULL);
+		} else {
 #ifdef DEBUG_CONTENT_REGEXP
-        xmlGenericError(xmlGenericErrorContext,
-                        "Content model of %s:\n", type->name);
-        xmlRegexpPrint(stderr, type->contModel);
+			xmlGenericError(xmlGenericErrorContext,
+							"Content model of %s:\n", type->name);
+			xmlRegexpPrint(stderr, contModel);
 #endif
-    }
-    ctxt->state = NULL;
-    xmlFreeAutomata(ctxt->am);
-    ctxt->am = NULL;
+		}
+		ctxt->state = NULL;
+        xmlRegFreeRegexp(contModel);
+		xmlFreeAutomata(ctxt->am);
+		ctxt->am = NULL;
+	}
+	{
+		ctxt->am = NULL;
+		ctxt->am = xmlNewAutomata();
+		if (ctxt->am == NULL) {
+			xmlGenericError(xmlGenericErrorContext,
+			"Cannot create automata for complex type %s\n", type->name);
+			return;
+		}
+		ctxt->state = xmlAutomataGetInitState(ctxt->am);
+		/*
+		* Build the automaton.
+		*/
+		xmlSchemaBuildAContentModel(ctxt, WXS_TYPE_PARTICLE(type), 0);
+		xmlAutomataSetFinalState(ctxt->am, ctxt->state);
+		type->contModel = xmlAutomataCompile(ctxt->am);
+		if (type->contModel == NULL) {
+			xmlSchemaPCustomErr(ctxt,
+			XML_SCHEMAP_INTERNAL,
+			WXS_BASIC_CAST type, type->node,
+			"Failed to compile the content model", NULL);
+		} else if (xmlRegexpIsDeterminist(type->contModel) != 1) {
+			xmlSchemaPCustomErr(ctxt,
+			XML_SCHEMAP_NOT_DETERMINISTIC,
+			/* XML_SCHEMAS_ERR_NOTDETERMINIST, */
+			WXS_BASIC_CAST type, type->node,
+			"The content model is not determinist", NULL);
+		} else {
+#ifdef DEBUG_CONTENT_REGEXP
+			xmlGenericError(xmlGenericErrorContext,
+							"Content model of %s:\n", type->name);
+			xmlRegexpPrint(stderr, type->contModel);
+#endif
+		}
+		ctxt->state = NULL;
+		xmlFreeAutomata(ctxt->am);
+		ctxt->am = NULL;
+	}
 }
 
 /**
