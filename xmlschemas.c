@@ -4914,6 +4914,53 @@ xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
 	return low_xmlSchemaGetType(schema, name, nsName);
 }
 
+struct type_s {
+	xmlSchemaTypePtr* typedef_array;
+	int count;
+};
+
+static void
+appendTypeDefn(void *payload, void *data,
+					const xmlChar * name ATTRIBUTE_UNUSED,
+					const xmlChar * namespace ATTRIBUTE_UNUSED,
+					const xmlChar * context ATTRIBUTE_UNUSED)
+{
+    xmlSchemaTypePtr typeDef = (xmlSchemaTypePtr) payload;
+    struct type_s* dataPtr = (struct type_s *) data;
+
+	if ((dataPtr->count % 10) == 0) {
+		if (dataPtr->count) {
+			dataPtr->typedef_array = (xmlSchemaTypePtr*)xmlRealloc(dataPtr->typedef_array,
+											(dataPtr->count + 10) * sizeof(xmlSchemaTypePtr));
+		}
+		else {
+			dataPtr->typedef_array = (xmlSchemaTypePtr*)xmlMalloc( 10 * sizeof(xmlSchemaTypePtr));
+		}
+		memset((dataPtr->typedef_array + dataPtr->count) , 0, 10*sizeof(xmlSchemaTypePtr));
+	}
+
+	dataPtr->typedef_array[dataPtr->count] = typeDef;
+	dataPtr->count++;
+
+
+	return;
+}
+
+xmlSchemaTypePtr*
+xmlSchemaGetGlobalTypeDefs(xmlSchemaPtr schema)
+{
+	xmlSchemaTypePtr* typeDefs = NULL;
+	struct type_s types_holder; 
+
+	memset(&types_holder, 0, sizeof(struct type_s));
+
+    xmlHashScanFull(schema->typeDecl, appendTypeDefn, &types_holder);
+
+	typeDefs = types_holder.typedef_array;
+
+	return typeDefs;
+}
+
 /**
  * xmlSchemaGetAttributeDecl:
  * @schema:  the context of the schema

@@ -258,6 +258,13 @@ xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
 XMLPUBFUN xmlSchemaElementPtr* XMLCALL
 xmlSchemaGetGlobalElements(xmlSchemaPtr schema);
 
+XMLPUBFUN xmlSchemaTypePtr XMLCALL
+xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName);
+
+XMLPUBFUN xmlSchemaTypePtr* XMLCALL
+xmlSchemaGetGlobalTypeDefs(xmlSchemaPtr schema);
+
 /*
  * For getting names of definitions/declarations in xsd
  */
