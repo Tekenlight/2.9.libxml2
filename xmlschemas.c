@@ -4821,17 +4821,16 @@ appendElementDecl(void *payload, void *data,
 	if ((dataPtr->count % 10) == 0) {
 		if (dataPtr->count) {
 			dataPtr->element_array = (xmlSchemaElementPtr*)xmlRealloc(dataPtr->element_array,
-											(dataPtr->count + 10) * sizeof(xmlSchemaElementPtr));
+											(dataPtr->count + 10 + 1) * sizeof(xmlSchemaElementPtr));
 		}
 		else {
-			dataPtr->element_array = (xmlSchemaElementPtr*)xmlMalloc( 10 * sizeof(xmlSchemaElementPtr));
+			dataPtr->element_array = (xmlSchemaElementPtr*)xmlMalloc( (10 + 1)  * sizeof(xmlSchemaElementPtr) );
 		}
-		memset((dataPtr->element_array + dataPtr->count) , 0, 10*sizeof(xmlSchemaElementPtr));
+		memset((dataPtr->element_array + dataPtr->count) , 0, (10 + 1)*sizeof(xmlSchemaElementPtr) );
 	}
 
 	dataPtr->element_array[dataPtr->count] = elem;
 	dataPtr->count++;
-
 
 	return;
 }
@@ -4931,12 +4930,12 @@ appendTypeDefn(void *payload, void *data,
 	if ((dataPtr->count % 10) == 0) {
 		if (dataPtr->count) {
 			dataPtr->typedef_array = (xmlSchemaTypePtr*)xmlRealloc(dataPtr->typedef_array,
-											(dataPtr->count + 10) * sizeof(xmlSchemaTypePtr));
+											(dataPtr->count + 10 + 1) * sizeof(xmlSchemaTypePtr));
 		}
 		else {
-			dataPtr->typedef_array = (xmlSchemaTypePtr*)xmlMalloc( 10 * sizeof(xmlSchemaTypePtr));
+			dataPtr->typedef_array = (xmlSchemaTypePtr*)xmlMalloc( (10 + 1) * sizeof(xmlSchemaTypePtr));
 		}
-		memset((dataPtr->typedef_array + dataPtr->count) , 0, 10*sizeof(xmlSchemaTypePtr));
+		memset((dataPtr->typedef_array + dataPtr->count) , 0, (10 + 1)*sizeof(xmlSchemaTypePtr));
 	}
 
 	dataPtr->typedef_array[dataPtr->count] = typeDef;
