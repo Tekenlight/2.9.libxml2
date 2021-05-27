@@ -1561,9 +1561,9 @@ _xmlSchemaBase64Decode (const xmlChar ch) {
  *         and -1 in case of internal or API error.
  */
 static int
-xmlSchemaValidateDates (xmlSchemaValType type,
-	                const xmlChar *dateTime, xmlSchemaValPtr *val,
-			int collapse) {
+low_xmlSchemaValidateDates (xmlSchemaValType type, const xmlChar *dateTime,
+											xmlSchemaValPtr *val, int collapse)
+{
     xmlSchemaValPtr dt;
     int ret;
     const xmlChar *cur = dateTime;
@@ -1771,6 +1771,23 @@ error:
     return 1;
 }
 
+/**
+ * xmlSchemaValidateDate:
+ * @type: the expected type or XML_SCHEMAS_UNKNOWN
+ * @dateTime:  string to analyze
+ * @val:  the return computed value
+ *
+ * Check that @dateTime conforms to the lexical space of one of the date types.
+ * if true a value is computed and returned in @val.
+ *
+ * Returns 0 if this validates, a positive error code number otherwise
+ *         and -1 in case of internal or API error.
+ */
+int xmlSchemaValidateDates(xmlSchemaValType datetype, const xmlChar *dateTime,
+											xmlSchemaValPtr *val, int collapse)
+{
+	return low_xmlSchemaValidateDates(datetype, dateTime, val, collapse);
+}
 /**
  * xmlSchemaValidateDuration:
  * @type: the predefined type
@@ -3997,7 +4014,7 @@ _xmlSchemaDateCastYMToDays (const xmlSchemaValPtr dt)
                dt->value.date.sec)
 
 /**
- * xmlSchemaCompareDates:
+ * low_xmlSchemaCompareDates:
  * @x:  a first date/time value
  * @y:  a second date/time value
  *
@@ -4007,7 +4024,7 @@ _xmlSchemaDateCastYMToDays (const xmlSchemaValPtr dt)
  * case of error
  */
 static int
-xmlSchemaCompareDates (xmlSchemaValPtr x, xmlSchemaValPtr y)
+low_xmlSchemaCompareDates (xmlSchemaValPtr x, xmlSchemaValPtr y)
 {
     unsigned char xmask, ymask, xor_mask, and_mask;
     xmlSchemaValPtr p1, p2, q1, q2;
@@ -4251,6 +4268,22 @@ xmlSchemaCompareDates (xmlSchemaValPtr x, xmlSchemaValPtr y)
     }
 
     return 0;
+}
+
+/**
+ * xmlSchemaCompareDates:
+ * @x:  a first date/time value
+ * @y:  a second date/time value
+ *
+ * Compare 2 date/times
+ *
+ * Returns -1 if x < y, 0 if x == y, 1 if x > y, 2 if x <> y, and -2 in
+ * case of error
+ */
+int
+xmlSchemaCompareDates (xmlSchemaValPtr x, xmlSchemaValPtr y)
+{
+	return low_xmlSchemaCompareDates(x, y);
 }
 
 /**
