@@ -152,6 +152,10 @@ XMLPUBFUN int XMLCALL
 XMLPUBFUN int XMLCALL
 xmlSchemaCompareDates (xmlSchemaValPtr x, xmlSchemaValPtr y);
 
+XMLPUBFUN int XMLCALL
+xmlSchemaValidateDuration(xmlSchemaTypePtr type,
+				   const xmlChar *duration, xmlSchemaValPtr *val, int collapse);
+
 #ifdef __cplusplus
 }
 #endif

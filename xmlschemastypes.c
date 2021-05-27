@@ -1788,22 +1788,12 @@ int xmlSchemaValidateDates(xmlSchemaValType datetype, const xmlChar *dateTime,
 {
 	return low_xmlSchemaValidateDates(datetype, dateTime, val, collapse);
 }
-/**
- * xmlSchemaValidateDuration:
- * @type: the predefined type
- * @duration:  string to analyze
- * @val:  the return computed value
- *
- * Check that @duration conforms to the lexical space of the duration type.
- * if true a value is computed and returned in @val.
- *
- * Returns 0 if this validates, a positive error code number otherwise
- *         and -1 in case of internal or API error.
- */
+
 static int
-xmlSchemaValidateDuration (xmlSchemaTypePtr type ATTRIBUTE_UNUSED,
+low_xmlSchemaValidateDuration (xmlSchemaTypePtr type ATTRIBUTE_UNUSED,
 	                   const xmlChar *duration, xmlSchemaValPtr *val,
-			   int collapse) {
+			   int collapse)
+{
     const xmlChar  *cur = duration;
     xmlSchemaValPtr dur;
     int isneg = 0;
@@ -1907,6 +1897,25 @@ error:
     if (dur != NULL)
 	xmlSchemaFreeValue(dur);
     return 1;
+}
+
+/**
+ * xmlSchemaValidateDuration:
+ * @type: the predefined type
+ * @duration:  string to analyze
+ * @val:  the return computed value
+ *
+ * Check that @duration conforms to the lexical space of the duration type.
+ * if true a value is computed and returned in @val.
+ *
+ * Returns 0 if this validates, a positive error code number otherwise
+ *         and -1 in case of internal or API error.
+ */
+int
+xmlSchemaValidateDuration (xmlSchemaTypePtr type ATTRIBUTE_UNUSED,
+				   const xmlChar *duration, xmlSchemaValPtr *val, int collapse)
+{
+	return low_xmlSchemaValidateDuration(type, duration, val, collapse);
 }
 
 /**
