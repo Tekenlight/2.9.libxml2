@@ -13012,93 +13012,260 @@ xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
 
     switch (particle->children->type) {
 	case XML_SCHEMA_TYPE_ANY: {
-	    xmlAutomataStatePtr start, end;
-	    xmlSchemaWildcardPtr wild;
-	    xmlSchemaWildcardNsPtr ns;
+		if (forUpa) {
+			xmlAutomataStatePtr start, end;
+			xmlSchemaWildcardPtr wild;
+			xmlSchemaWildcardNsPtr ns;
 
-	    wild = (xmlSchemaWildcardPtr) particle->children;
+			wild = (xmlSchemaWildcardPtr) particle->children;
 
-	    start = pctxt->state;
-	    end = xmlAutomataNewState(pctxt->am);
+			start = pctxt->state;
+			end = xmlAutomataNewState(pctxt->am);
 
-	    if (particle->maxOccurs == 1) {
-		if (wild->any == 1) {
-		    /*
-		    * We need to add both transitions:
-		    *
-		    * 1. the {"*", "*"} for elements in a namespace.
-		    */
-		    pctxt->state =
-			xmlAutomataNewTransition2(pctxt->am,
-			start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
-		    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
-		    /*
-		    * 2. the {"*"} for elements in no namespace.
-		    */
-		    pctxt->state =
-			xmlAutomataNewTransition2(pctxt->am,
-			start, NULL, BAD_CAST "*", NULL, wild);
-		    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+			if (particle->maxOccurs == 1) {
+				if (wild->any == 1) {
+					/*
+					* We need to add both transitions:
+					*
+					* 1. the {"*", "*"} for elements in a namespace.
+					*/
+					pctxt->state =
+					xmlAutomataNewTransition2(pctxt->am,
+					start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
+					xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+					/*
+					* 2. the {"*"} for elements in no namespace.
+					*/
+					pctxt->state =
+					xmlAutomataNewTransition2(pctxt->am,
+					start, NULL, BAD_CAST "*", NULL, wild);
+					xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
 
-		} else if (wild->nsSet != NULL) {
-		    ns = wild->nsSet;
-		    do {
-			pctxt->state = start;
-			pctxt->state = xmlAutomataNewTransition2(pctxt->am,
-			    pctxt->state, NULL, BAD_CAST "*", ns->value, wild);
-			xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
-			ns = ns->next;
-		    } while (ns != NULL);
+				} else if (wild->nsSet != NULL) {
+					ns = wild->nsSet;
+					do {
+						pctxt->state = start;
+						pctxt->state = xmlAutomataNewTransition2(pctxt->am,
+							pctxt->state, NULL, BAD_CAST "*", ns->value, wild);
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+						ns = ns->next;
+					} while (ns != NULL);
 
-		} else if (wild->negNsSet != NULL) {
-		    pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
-			start, end, BAD_CAST "*", wild->negNsSet->value,
-			wild);
+				} else if (wild->negNsSet != NULL) {
+					pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+					start, end, BAD_CAST "*", wild->negNsSet->value,
+					wild);
+				}
+			} else {
+				xmlAutomataStatePtr intermediate_start = NULL;
+				intermediate_start = start;
+				xmlAutomataStatePtr hop = NULL;
+				int maxOccurs =
+					particle->maxOccurs == UNBOUNDED ? UNBOUNDED :
+												   particle->maxOccurs;
+				int minOccurs =
+					particle->minOccurs < 1 ? 0 : particle->minOccurs;
+
+				if (minOccurs > 0) {
+					for (int i=0; i < minOccurs; i++) {
+						hop = xmlAutomataNewState(pctxt->am);
+						if (wild->any == 1) {
+							pctxt->state =
+							xmlAutomataNewTransition2(pctxt->am,
+							intermediate_start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+							pctxt->state =
+							xmlAutomataNewTransition2(pctxt->am,
+							intermediate_start, NULL, BAD_CAST "*", NULL, wild);
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+						} else if (wild->nsSet != NULL) {
+							ns = wild->nsSet;
+							do {
+								pctxt->state =
+									xmlAutomataNewTransition2(pctxt->am,
+									intermediate_start, NULL, BAD_CAST "*", ns->value, wild);
+								xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+								ns = ns->next;
+							} while (ns != NULL);
+
+						} else if (wild->negNsSet != NULL) {
+							pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+							intermediate_start, hop, BAD_CAST "*", wild->negNsSet->value,
+							wild);
+						}
+						intermediate_start = hop;
+						pctxt->state = hop;
+						hop = NULL;
+						pctxt->state = xmlAutomataNewEpsilon(pctxt->am, pctxt->state, NULL);
+						intermediate_start = pctxt->state;
+					}
+				}
+				if (maxOccurs < UNBOUNDED) {
+					int counter = 0;
+					counter = maxOccurs - minOccurs;
+					if (counter > 0) {
+						xmlAutomataStatePtr s = NULL;
+						for (int i=0; i < counter; i++) {
+							hop = xmlAutomataNewState(pctxt->am);
+							xmlAutomataNewEpsilon(pctxt->am, intermediate_start, hop);
+							if (wild->any == 1) {
+								s =
+								xmlAutomataNewTransition2(pctxt->am,
+								intermediate_start, hop, BAD_CAST "*", BAD_CAST "*", wild);
+								s = NULL;
+								s =
+								xmlAutomataNewTransition2(pctxt->am,
+								intermediate_start, hop, BAD_CAST "*", NULL, wild);
+							} else if (wild->nsSet != NULL) {
+								ns = wild->nsSet;
+								do {
+									s =
+										xmlAutomataNewTransition2(pctxt->am,
+										intermediate_start, hop, BAD_CAST "*", ns->value, wild);
+									s = NULL;
+									ns = ns->next;
+								} while (ns != NULL);
+
+							} else if (wild->negNsSet != NULL) {
+								pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+								intermediate_start, hop, BAD_CAST "*", wild->negNsSet->value,
+								wild);
+							}
+							hop = xmlAutomataNewEpsilon(pctxt->am, hop, NULL);
+							intermediate_start = hop;
+							pctxt->state = hop;
+							hop = NULL;;
+						}
+					}
+				}
+				else {
+					hop = xmlAutomataNewState(pctxt->am);
+					if (wild->any == 1) {
+						pctxt->state =
+						xmlAutomataNewTransition2(pctxt->am,
+						intermediate_start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+						pctxt->state =
+						xmlAutomataNewTransition2(pctxt->am,
+						intermediate_start, NULL, BAD_CAST "*", NULL, wild);
+						xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+					} else if (wild->nsSet != NULL) {
+						ns = wild->nsSet;
+						do {
+							pctxt->state =
+								xmlAutomataNewTransition2(pctxt->am,
+								intermediate_start, NULL, BAD_CAST "*", ns->value, wild);
+							xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+							ns = ns->next;
+						} while (ns != NULL);
+
+					} else if (wild->negNsSet != NULL) {
+						pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+						intermediate_start, hop, BAD_CAST "*", wild->negNsSet->value,
+						wild);
+					}
+					xmlAutomataNewEpsilon(pctxt->am, hop, intermediate_start);
+					intermediate_start = hop;
+					pctxt->state = hop;
+				}
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+			}
+			if (particle->minOccurs == 0) {
+				xmlAutomataNewEpsilon(pctxt->am, start, end);
+				ret = 1;
+			}
+			pctxt->state = end;
+				break;
 		}
-	    } else {
-		int counter;
-		xmlAutomataStatePtr hop;
-		int maxOccurs =
-		    particle->maxOccurs == UNBOUNDED ? UNBOUNDED :
-                                           particle->maxOccurs - 1;
-		int minOccurs =
-		    particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
+		else {
+			xmlAutomataStatePtr start, end;
+			xmlSchemaWildcardPtr wild;
+			xmlSchemaWildcardNsPtr ns;
 
-		counter = xmlAutomataNewCounter(pctxt->am, minOccurs, maxOccurs);
-		hop = xmlAutomataNewState(pctxt->am);
-		if (wild->any == 1) {
-		    pctxt->state =
-			xmlAutomataNewTransition2(pctxt->am,
-			start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
-		    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
-		    pctxt->state =
-			xmlAutomataNewTransition2(pctxt->am,
-			start, NULL, BAD_CAST "*", NULL, wild);
-		    xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
-		} else if (wild->nsSet != NULL) {
-		    ns = wild->nsSet;
-		    do {
-			pctxt->state =
-			    xmlAutomataNewTransition2(pctxt->am,
-				start, NULL, BAD_CAST "*", ns->value, wild);
-			xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
-			ns = ns->next;
-		    } while (ns != NULL);
+			wild = (xmlSchemaWildcardPtr) particle->children;
 
-		} else if (wild->negNsSet != NULL) {
-		    pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
-			start, hop, BAD_CAST "*", wild->negNsSet->value,
-			wild);
+			start = pctxt->state;
+			end = xmlAutomataNewState(pctxt->am);
+
+			if (particle->maxOccurs == 1) {
+			if (wild->any == 1) {
+				/*
+				* We need to add both transitions:
+				*
+				* 1. the {"*", "*"} for elements in a namespace.
+				*/
+				pctxt->state =
+				xmlAutomataNewTransition2(pctxt->am,
+				start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+				/*
+				* 2. the {"*"} for elements in no namespace.
+				*/
+				pctxt->state =
+				xmlAutomataNewTransition2(pctxt->am,
+				start, NULL, BAD_CAST "*", NULL, wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+
+			} else if (wild->nsSet != NULL) {
+				ns = wild->nsSet;
+				do {
+				pctxt->state = start;
+				pctxt->state = xmlAutomataNewTransition2(pctxt->am,
+					pctxt->state, NULL, BAD_CAST "*", ns->value, wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, end);
+				ns = ns->next;
+				} while (ns != NULL);
+
+			} else if (wild->negNsSet != NULL) {
+				pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+				start, end, BAD_CAST "*", wild->negNsSet->value,
+				wild);
+			}
+			} else {
+			int counter;
+			xmlAutomataStatePtr hop;
+			int maxOccurs =
+				particle->maxOccurs == UNBOUNDED ? UNBOUNDED :
+											   particle->maxOccurs - 1;
+			int minOccurs =
+				particle->minOccurs < 1 ? 0 : particle->minOccurs - 1;
+
+			counter = xmlAutomataNewCounter(pctxt->am, minOccurs, maxOccurs);
+			hop = xmlAutomataNewState(pctxt->am);
+			if (wild->any == 1) {
+				pctxt->state =
+				xmlAutomataNewTransition2(pctxt->am,
+				start, NULL, BAD_CAST "*", BAD_CAST "*", wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+				pctxt->state =
+				xmlAutomataNewTransition2(pctxt->am,
+				start, NULL, BAD_CAST "*", NULL, wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+			} else if (wild->nsSet != NULL) {
+				ns = wild->nsSet;
+				do {
+				pctxt->state =
+					xmlAutomataNewTransition2(pctxt->am,
+					start, NULL, BAD_CAST "*", ns->value, wild);
+				xmlAutomataNewEpsilon(pctxt->am, pctxt->state, hop);
+				ns = ns->next;
+				} while (ns != NULL);
+
+			} else if (wild->negNsSet != NULL) {
+				pctxt->state = xmlAutomataNewNegTrans(pctxt->am,
+				start, hop, BAD_CAST "*", wild->negNsSet->value,
+				wild);
+			}
+			xmlAutomataNewCountedTrans(pctxt->am, hop, start, counter);
+			xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
+			}
+			if (particle->minOccurs == 0) {
+			xmlAutomataNewEpsilon(pctxt->am, start, end);
+					ret = 1;
+			}
+			pctxt->state = end;
+				break;
 		}
-		xmlAutomataNewCountedTrans(pctxt->am, hop, start, counter);
-		xmlAutomataNewCounterTrans(pctxt->am, hop, end, counter);
-	    }
-	    if (particle->minOccurs == 0) {
-		xmlAutomataNewEpsilon(pctxt->am, start, end);
-                ret = 1;
-	    }
-	    pctxt->state = end;
-            break;
 	}
         case XML_SCHEMA_TYPE_ELEMENT:
 	    ret = xmlSchemaBuildContentModelForElement(pctxt, particle, forUpa);
