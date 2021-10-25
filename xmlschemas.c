@@ -4960,6 +4960,84 @@ xmlSchemaGetGlobalTypeDefs(xmlSchemaPtr schema)
 	return typeDefs;
 }
 
+struct mgrdef_s {
+	xmlSchemaModelGroupDefPtr* mgrdef_array;
+	int count;
+};
+
+static void
+appendMgrDefn(void *payload, void *data,
+					const xmlChar * name ATTRIBUTE_UNUSED,
+					const xmlChar * namespace ATTRIBUTE_UNUSED,
+					const xmlChar * context ATTRIBUTE_UNUSED)
+{
+    xmlSchemaModelGroupDefPtr mgrDef = (xmlSchemaModelGroupDefPtr) payload;
+    struct mgrdef_s* dataPtr = (struct mgrdef_s *) data;
+
+	if ((dataPtr->count % 10) == 0) {
+		if (dataPtr->count) {
+			dataPtr->mgrdef_array = (xmlSchemaModelGroupDefPtr*)xmlRealloc(dataPtr->mgrdef_array,
+											(dataPtr->count + 10 + 1) * sizeof(xmlSchemaModelGroupDefPtr));
+		}
+		else {
+			dataPtr->mgrdef_array = (xmlSchemaModelGroupDefPtr*)xmlMalloc( (10 + 1) * sizeof(xmlSchemaModelGroupDefPtr));
+		}
+		memset((dataPtr->mgrdef_array + dataPtr->count) , 0, (10 + 1)*sizeof(xmlSchemaModelGroupDefPtr));
+	}
+
+	dataPtr->mgrdef_array[dataPtr->count] = mgrDef;
+	dataPtr->count++;
+
+	return;
+}
+
+xmlSchemaModelGroupDefPtr*
+xmlSchemaGetGlobalModelGroupDefs(xmlSchemaPtr schema)
+{
+	xmlSchemaModelGroupDefPtr* mgrDefs = NULL;
+	struct mgrdef_s mgrdef_holder; 
+
+	memset(&mgrdef_holder, 0, sizeof(struct mgrdef_s));
+
+    xmlHashScanFull(schema->groupDecl, appendMgrDefn, &mgrdef_holder);
+
+	mgrDefs = mgrdef_holder.mgrdef_array;
+
+	return mgrDefs;
+
+}
+
+static xmlSchemaModelGroupDefPtr
+low_xmlSchemaGetModelGroupDef(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName)
+{
+    xmlSchemaModelGroupDefPtr ret = NULL;
+
+    if ((name == NULL) || (schema == NULL))
+        return(NULL);
+    if (schema != NULL) {
+	WXS_FIND_GLOBAL_ITEM(groupDecl)
+    }
+exit:
+#ifdef DEBUG
+    if (ret == NULL) {
+        if (nsName == NULL)
+            fprintf(stderr, "Unable to lookup model group definition. %s", name);
+        else
+            fprintf(stderr, "Unable to lookup model group definition. %s:%s", name,
+                    nsName);
+    }
+#endif
+    return (ret);
+}
+
+xmlSchemaModelGroupDefPtr
+xmlSchemaGetModelGroupDef(xmlSchemaPtr schema, const xmlChar * name,
+							 const xmlChar * nsName)
+{
+	return low_xmlSchemaGetModelGroupDef(schema, name, nsName);
+}
+
 /**
  * xmlSchemaGetAttributeDecl:
  * @schema:  the context of the schema
@@ -19740,8 +19818,19 @@ xmlSchemaModelGroupToModelGroupDefFixup(
 	/*
 	* Assign the model group to the {term} of the particle.
 	*/
+	xmlSchemaAnnotPtr annot = (void*)WXS_PARTICLE_TERM(particle)->annot;
 	WXS_PARTICLE_TERM(particle) =
 	    WXS_TREE_CAST WXS_MODELGROUPDEF_MODEL(WXS_PARTICLE_TERM(particle));
+	if (annot && WXS_PARTICLE_TERM(particle)) {
+		WXS_PARTICLE_TERM(particle)->annot = (xmlSchemaAnnotPtr) xmlMalloc(sizeof(xmlSchemaAnnot));
+		if (WXS_PARTICLE_TERM(particle)->annot == NULL) {
+			xmlSchemaPErrMemory(ctxt, "allocating annotation", NULL);
+		}
+		else {
+			WXS_PARTICLE_TERM(particle)->annot->next = NULL;
+			WXS_PARTICLE_TERM(particle)->annot->content = xmlCopyNode(annot->content, 1);
+		}
+	}
 
 	particle = WXS_PTC_CAST particle->next;
     }
@@ -20771,9 +20860,10 @@ xmlSchemaResolveModelGroupParticleReferences(
 	    goto next_particle;
 	}
 	if (refItem->type == XML_SCHEMA_TYPE_GROUP) {
-	    if (WXS_MODELGROUPDEF_MODEL(refItem) == NULL)
+	    if (WXS_MODELGROUPDEF_MODEL(refItem) == NULL) { 
 		/* TODO: remove the particle. */
 		goto next_particle;
+		}
 	    /*
 	    * NOTE that we will assign the model group definition
 	    * itself to the "term" of the particle. This will ease

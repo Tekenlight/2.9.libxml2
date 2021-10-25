@@ -265,6 +265,16 @@ xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
 XMLPUBFUN xmlSchemaTypePtr* XMLCALL
 xmlSchemaGetGlobalTypeDefs(xmlSchemaPtr schema);
 
+typedef struct _xmlSchemaModelGroupDef xmlSchemaModelGroupDef;
+typedef xmlSchemaModelGroupDef *xmlSchemaModelGroupDefPtr;
+
+XMLPUBFUN xmlSchemaModelGroupDefPtr XMLCALL
+xmlSchemaGetModelGroupDef(xmlSchemaPtr schema, const xmlChar * name,
+                 const xmlChar * nsName);
+
+XMLPUBFUN xmlSchemaModelGroupDefPtr* XMLCALL
+xmlSchemaGetGlobalModelGroupDefs(xmlSchemaPtr schema);
+
 /*
  * For getting names of definitions/declarations in xsd
  */

@@ -11,6 +11,7 @@
 #ifndef __XML_REGEXP_H__
 #define __XML_REGEXP_H__
 
+#include <stdio.h>
 #include <libxml/xmlversion.h>
 
 #ifdef LIBXML_REGEXP_ENABLED
@@ -57,6 +58,10 @@ XMLPUBFUN int XMLCALL
 XMLPUBFUN void XMLCALL
 		    xmlRegexpPrint	(FILE *output,
 					 xmlRegexpPtr regexp);
+
+XMLPUBFUN void XMLCALL
+	xmlRegexpPrintToStdOut(xmlRegexpPtr regexp);
+
 XMLPUBFUN int XMLCALL
 		    xmlRegexpIsDeterminist(xmlRegexpPtr comp);
 
