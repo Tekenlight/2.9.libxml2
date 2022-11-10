@@ -19,7 +19,7 @@ bin_PROGRAMS = xmllint xmlcatalog
 
 bin_SCRIPTS=xml2-config
 
-lib_LTLIBRARIES = libxml2.la
+lib_LTLIBRARIES = libxml2.la libcxml2.la
 libxml2_la_LIBADD = $(ICU_LIBS) $(THREAD_LIBS) $(Z_LIBS) $(LZMA_LIBS) $(ICONV_LIBS) $(M_LIBS) $(WIN32_EXTRA_LIBADD)
 
 if USE_VERSION_SCRIPT
@@ -56,6 +56,23 @@ libxml2_la_SOURCES = SAX.c entities.c encoding.c error.c parserInternals.c  \
 		xmlreader.c relaxng.c dict.c SAX2.c \
 		xmlwriter.c legacy.c chvalid.c pattern.c xmlsave.c \
 		xmlmodule.c schematron.c xzlib.c
+
+#lib_LTLIBRARIES = libcxml2.la
+libcxml2_la_LIBADD = libxml2.la
+
+libcxml2_la_LDFLAGS = $(CYGWIN_EXTRA_LDFLAGS) $(WIN32_EXTRA_LDFLAGS) \
+		     $(LIBXML2_VERSION_SCRIPT) \
+		     -version-info $(LIBXML_VERSION_INFO) \
+		     $(MODULE_PLATFORM_LIBS)
+
+libcxml2_la_SOURCES = libcxml2.c
+
+
+
+
+
+
+
 
 DEPS = $(top_builddir)/libxml2.la
 LDADDS = $(STATIC_BINARIES) $(top_builddir)/libxml2.la $(THREAD_LIBS) $(Z_LIBS) $(LZMA_LIBS) $(ICONV_LIBS) $(M_LIBS) $(WIN32_EXTRA_LIBADD)
