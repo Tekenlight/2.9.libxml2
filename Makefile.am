@@ -57,8 +57,6 @@ libxml2_la_SOURCES = SAX.c entities.c encoding.c error.c parserInternals.c  \
 		xmlwriter.c legacy.c chvalid.c pattern.c xmlsave.c \
 		xmlmodule.c schematron.c xzlib.c
 
-#lib_LTLIBRARIES = libcxml2.la
-#libcxml2_la_LIBADD = libxml2.la
 libcxml2_la_LIBADD = $(ICU_LIBS) $(THREAD_LIBS) $(Z_LIBS) $(LZMA_LIBS) $(ICONV_LIBS) $(M_LIBS) $(WIN32_EXTRA_LIBADD)
 
 libcxml2_la_LDFLAGS = $(CYGWIN_EXTRA_LDFLAGS) $(WIN32_EXTRA_LDFLAGS) \

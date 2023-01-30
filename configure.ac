@@ -40,6 +40,17 @@ else if test -d .git ; then
 fi
 fi
 fi
+
+
+
+AC_SUBST(oldincludedir, "$oldincludedir/lua_schema")
+AC_SUBST(includedir, "$includedir/lua_schema")
+AC_SUBST(libdir, "$libdir/lua_schema")
+AC_SUBST(bindir, "$bindir/lua_schema")
+AC_SUBST(mandir, "$mandir/lua_schema")
+AC_SUBST(docdir, "$docdir/lua_schema")
+AC_SUBST(htmldir, "$htmldir/lua_schema")
+
 AC_SUBST(LIBXML_MAJOR_VERSION)
 AC_SUBST(LIBXML_MINOR_VERSION)
 AC_SUBST(LIBXML_MICRO_VERSION)
