@@ -126,3 +126,4 @@ xstc/Makefile
 xstc/Makefile.in
 xstc/Tests
 xstc/xsts-*.tar.gz
+gtags
