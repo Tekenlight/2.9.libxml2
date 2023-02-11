@@ -1,3 +1,6 @@
+#if PY_MAJOR_VERSION >= 3
+#define PY_SSIZE_T_CLEAN
+#endif
 #include <Python.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
