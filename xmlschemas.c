@@ -19821,6 +19821,8 @@ xmlSchemaModelGroupToModelGroupDefFixup(
 	xmlSchemaAnnotPtr annot = (void*)WXS_PARTICLE_TERM(particle)->annot;
 	WXS_PARTICLE_TERM(particle) =
 	    WXS_TREE_CAST WXS_MODELGROUPDEF_MODEL(WXS_PARTICLE_TERM(particle));
+	/*
+	 * This is causing memory leak
 	if (annot && WXS_PARTICLE_TERM(particle)) {
 		WXS_PARTICLE_TERM(particle)->annot = (xmlSchemaAnnotPtr) xmlMalloc(sizeof(xmlSchemaAnnot));
 		if (WXS_PARTICLE_TERM(particle)->annot == NULL) {
@@ -19831,6 +19833,7 @@ xmlSchemaModelGroupToModelGroupDefFixup(
 			WXS_PARTICLE_TERM(particle)->annot->content = xmlCopyNode(annot->content, 1);
 		}
 	}
+	*/
 
 	particle = WXS_PTC_CAST particle->next;
     }
