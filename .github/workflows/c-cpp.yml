@@ -16,7 +16,7 @@ jobs:
     - name: autoreconf
       run: autoreconf -i
     - name: configure
-      run: ./configure
+      run: ./configure --with-python="no"
     - name: make
       run: make
     - name: make check
