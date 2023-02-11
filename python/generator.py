@@ -555,6 +555,9 @@ def buildStubs():
     export.write("/* Generated */\n\n")
     wrapper = open("libxml2-py.c", "w")
     wrapper.write("/* Generated */\n\n")
+    wrapper.write("#if PY_MAJOR_VERSION >= 3\n")
+    wrapper.write("#define PY_SSIZE_T_CLEAN\n")
+    wrapper.write("#endif\n")
     wrapper.write("#include <Python.h>\n")
     wrapper.write("#include <libxml/xmlversion.h>\n")
     wrapper.write("#include <libxml/tree.h>\n")
@@ -932,7 +935,7 @@ def buildWrappers():
         func = nameFixup(name, "None", file, file)
         info = (0, func, name, ret, args, file)
         function_classes['None'].append(info)
-   
+
     classes = open("libxml2class.py", "w")
     txt = open("libxml2class.txt", "w")
     txt.write("          Generated Classes for libxml2-python\n\n")
